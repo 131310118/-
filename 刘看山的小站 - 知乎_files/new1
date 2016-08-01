@@ -1,0 +1,10 @@
+r=e("babel-runtime/helpers/sliced-to-array")["default"]
+o=e("babel-runtime/helpers/interop-require-default")["default"];
+a=e("../sprite");
+u=o(a)
+m=!1;
+a=r(e[o],6)
+c=a[0],l=a[1],f=a[2],d=a[3],p=a[4]
+m?(i=document.createElement("div"),i.classList.add("bg"),t.appendChild(i),t.classList.add("use-bg"))
+:(s=new Image,h?(c*=2,l*=2,s.src="/images/corridor/sprite/"+o+".png"):s.src="/images/corridor/sprite/"+o+"@1x.png",t.classList.add("use-canvas"))
+g=new u["default"]({bg:i,image:s,width:c,height:l,cols:f,rows:d,frames:p});

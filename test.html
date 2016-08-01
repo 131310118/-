@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>测试</title>
+    <link href="font-awesome/font-awesome.min.css" type="text/css" rel="stylesheet">
+    <style>
+        #holder{
+            height:400px;
+            padding:20px;
+            border:1px dashed red;
+        }
+        #tree .child_list{
+            padding: 10px 20px;
+            position: relative;
+        }
+        #tree .child_list > ul{
+            padding-left: 20px;
+        }
+        #tree .child_list.open > ul{
+            border-left: 1px dashed black;
+        }
+        #tree a{
+            text-decoration: none;
+            position: relative;
+        }
+        #tree a:after{
+            content: " ";
+            position: absolute;
+            width: 20px;
+            border-top: 1px dashed black;
+            left: -21px;
+            top: 6px;
+        }
+        #tree a:before{
+            padding-right:10px;
+        }
+        #tree a .fa-plus,#tree a .fa-minus{
+            position: absolute;
+            left: -26px;
+            z-index: 1;
+        }
+        #tree .insert,#tree .delete,#tree .rename{
+            padding:5px 10px;
+            width: 48px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 10;
+            border-bottom: 1px solid black;
+            background-color: #ffffff;
+            color:black;
+        }
+        #tree .insert:hover,#tree .delete:hover,#tree .rename:hover{
+            color:#ffffff;
+            background-color: #75ee59;
+        }
+        #tree .options{
+            border-top: 1px solid black;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            z-index: 1;
+            position:absolute;
+        }
+        #tree ul{
+            list-style: none;
+        }
+        #tree .child_li{
+            padding-left:43.7px;
+            position: relative;
+        }
+        #tree .child_li .liner{
+            margin: 0;
+            border-top: 1px dashed black;
+            width: 40px;
+            position: absolute;
+            left: 0;
+            top: 9px;
+        }
+        #tree .child_li .liner_left{
+            margin: 0;
+            border-left: 1px dashed black;
+            height: 18px;
+            position: absolute;
+            left: 0;
+            top: -9px;
+        }
+        /*#tree .child_li:after{
+            content: "";
+            position: absolute;
+            left: -39.7px;
+            top: 0;
+            border-left: 1px dashed black;
+        }
+        #tree .open:after{
+             content: "";
+             position: absolute;
+             left: -19.7px;
+             top: -8px;
+             border-left: 1px dashed black;
+         }*/
+    </style>
+</head>
+<body><a href="%6a%61%76%61%73%63%72%69%70%74:%61%6c%65%72%74%28%31%29"></a>
+URL 编码 "javascript:alert(1)"
+<a href="&#x6a;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;:%61%6c%65%72%74%28%32%29">
+HTML字符实体编码 "javascript" 和 URL 编码 "alert(2)"
+  <a href="javascript%3aalert(3)"></a>
+URL 编码 ":"
+  <div>&#60;img src=x onerror=alert(4)&#62;</div>
+HTML字符实体编码 < 和 >
+  <textarea>&#60;script&#62;alert(5)&#60;/script&#62;</textarea>
+HTML字符实体编码 < 和 >
+<textarea><script>alert(6)</script></textarea>
+<canvas class="watch" width="500px" height="500px"><!--长宽不能用css样式定义-->
+
+</canvas>
+<canvas class="animate" width="800px" height="800px"><!--长宽不能用css样式定义-->
+
+</canvas>
+<canvas id='translate' width="800px" height="800px"><!--长宽不能用css样式定义-->
+
+</canvas>
+<canvas id='loading' width="800px" height="800px"><!--长宽不能用css样式定义-->
+
+</canvas>
+<form id="upload-form" action="upload.php" method="post" enctype="multipart/form-data" >
+    <input type="button" onclick="test()" value="text">
+    <input type="button" onclick="test1()" value="htmlText">
+    <input type="file" id="upload" name="upload" /> <br />
+     <input type="submit" value="Upload" />
+     <progress id='uploadprogress' min='0' max=100' value='0'>0</progress>
+</form>
+<div id="holder"></div>
+<div id="tree">
+</div>
+<script src="sorts.js" type="text/javascript"></script>
+<script src="canvas.js" type="text/javascript"></script>
+<script src="./jquery-3.0.0.js" type="text/javascript"></script>
+<script src="createTextRange.js" type="text/javascript"></script>
+<script>
+	var ctx = translate.getContext('2d');
+	draw();
+	ctx.save();
+	drawStars();
+	ctx.restore();
+	//对话框
+	ctx.beginPath();
+	ctx.translate(0,155);
+    ctx.moveTo(75,25);
+    ctx.quadraticCurveTo(25,25,25,62.5);
+	ctx.stroke();
+    ctx.quadraticCurveTo(25,100,50,100);ctx.stroke();
+    ctx.quadraticCurveTo(50,120,30,125);ctx.stroke();
+    ctx.quadraticCurveTo(60,120,65,100);ctx.stroke();
+    ctx.quadraticCurveTo(125,100,125,62.5);ctx.stroke();
+    ctx.quadraticCurveTo(125,25,75,25);
+    ctx.stroke();
+	//爱心
+	ctx.translate(0,155);
+	ctx.beginPath();
+    ctx.bezierCurveTo(75,37,70,25,50,25);
+    ctx.bezierCurveTo(20,25,20,62.5,20,62.5);
+    ctx.bezierCurveTo(20,80,40,102,75,120);
+    ctx.bezierCurveTo(110,102,130,80,130,62.5);
+    ctx.bezierCurveTo(130,62.5,130,25,100,25);
+    ctx.bezierCurveTo(85,25,75,37,75,40);
+	ctx.fillStyle='#c12a2a';
+    ctx.fill();
+    document.getElementById('holder').onmousedown = function(e){this.style.backgroundColor = 'blue';document.body.style.cursor='pointer'}
+</script>
+<script src="tree.js" type="text/javascript">
+    /*function slideUp(element,speed){
+        speed = speed || 500;
+        var height = element.clientHeight;
+        var d = height*10.0/speed;
+        element.style.height = height+'px';
+        element.style.overflow = 'hidden';
+        var val = height;
+        (function(){
+            val-=d;
+            element.style.height = val+'px';
+            if(val>0){
+                setTimeout(arguments.callee,10)
+            }
+        })();
+    }
+    function tree(obj){
+        this.data = undefined;
+        this.children = (function(obj,t){
+            var obj = obj || {};
+            var root = {};
+            for (var i in obj) {
+                t.data = i;
+                if (obj[i] instanceof Array) {
+                    for (var j = 0; j < obj[i].length; j++) {
+                        if (typeof obj[i][j] == 'object') {
+                            root[j] = new tree(obj[i][j]);
+                        }
+                        else {
+                            var b = {};
+                            b[obj[i][j]] = [];
+                            root[j] = new tree(b);
+                        }
+                    }
+                }
+            }
+            return root;
+        })(obj,this);
+    }
+    tree.prototype.constructor = tree;
+    tree.prototype.getData = function(){
+        return this.data;
+    }
+    tree.prototype.getChildren = function(){
+        return this.children;
+    }
+    tree.prototype.setData = function(data){
+        this.data = data;
+    }
+    tree.prototype.setChildren = function(children){
+        this.children = children;
+    }
+    tree.prototype.insert = function(node,children){
+        this.children[node] = children;
+    }
+    tree.prototype.isEmpty = function(){
+        for(var i in this.children){
+            return false;
+        }
+        return true;
+    }
+    tree.prototype.html = function(){
+        var fun_none = function(){console.log(3)};
+        var upp = function(){
+            var e = document.createEvent('MouseEvents');
+            e.initEvent('click',true,true);
+            for(var i=0;i<this.nextSibling.getElementsByClassName('open').length;i++){
+                this.nextSibling.getElementsByClassName('open')[i].previousSibling.dispatchEvent(e);
+            }
+            $(this.nextSibling).slideUp();
+            this.removeEventListener('click',upp,true);
+            down(this);
+            this.nextElementSibling.className = 'child_list';
+        }
+        var downn = function(){
+            event.stopPropagation();
+            event.preventDefault();
+            $(this.nextSibling).slideDown();
+            this.removeEventListener('click',downn,false);
+            up(this);
+            this.nextElementSibling.className = 'child_list open';
+        }
+        var down = function(ele){
+            ele.addEventListener('click',downn,false)
+        }
+        var up = function(ele){
+            ele.addEventListener('click',upp,true)
+        }
+        var create = (function(node){
+            var ul_t = document.createElement('ul');
+            var a = document.createElement('a');
+            a.appendChild(document.createTextNode(node.data));
+            a.className = 'fa fa-file';
+            a.href = 'javascript:void(0);';
+            ul_t.appendChild(a);
+            var ul_b = document.createElement('ul');
+            ul_b.className = 'child_list open';
+            for(var i in node.children){
+                if(!node.children[i].isEmpty()){
+                    ul_b.appendChild(node.children[i].html());
+                }
+                else{
+                    var li = document.createElement('li');
+                    var span = document.createElement('span');
+                    var liner = document.createElement('p');
+                    var liner_left = document.createElement('p');
+                    liner.className = 'liner';
+                    liner_left.className = 'liner_left';
+                    li.className = 'child_li'
+                    span.appendChild(document.createTextNode(node.children[i].data));
+                    li.appendChild(span);
+                    li.appendChild(liner);
+                    li.appendChild(liner_left);
+                    ul_b.appendChild(li);
+                }
+            }
+            ul_t.appendChild(ul_b);
+            up(a);
+            return ul_t;
+        })(this);
+        return create;
+    }
+    var t = new tree({1:[{2:[{3:[7]},4]},{w:[{f:[{jsf:['jdh','hfj']},'hi']},'odusj']},5]});
+    document.getElementById('tree').appendChild(t.html());*/
+</script>
+</body>
+<script src='./map.js' type='text/javascript'></script>
+<script src='./binaryTree.js' type='text/javascript'></script>
+<script src='./set.js' type='text/javascript'></script>
+<script src='./linkList.js' type='text/javascript'></script>
+<script src='./hush.js' type='text/javascript'></script>
+<script src='./dictionary.js' type='text/javascript'></script>
+<!-- <script src='./reverseLinkList.js' type='text/javascript'></script> -->
+<script src='./queue.js' type='text/javascript'></script>
+<script src="stack.js" type="text/javascript"></script>
+<script src="./List.js" type="text/javascript"></script>
+<script src="./prototype.js" type="text/javascript"></script>
+<script src="./copyExtend.js" type="text/javascript"></script>
+<script src="./shallowCopy.js" type="text/javascript"></script>
+<script src="./deepcopy.js" type="text/javascript"></script>
+<script src="./quicksort.js" type="text/javascript"></script>
+<script src="./trigger.js" type="text/javascript"></script>
+<script src="./upload.js" type="text/javascript"></script>
+</html>
