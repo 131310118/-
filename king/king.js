@@ -3,7 +3,7 @@
     Create person : wangjun
  */
 
-var king = {
+var $ = {
     queryString: function (id) {
         var e = {};
         try {
