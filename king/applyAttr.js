@@ -1,6 +1,7 @@
 /*  applyAttr.js
     Create person : wangjun
     添加节点自定义属性
+    将自定义属性（例：data-all）添加到节点属性中并命名为dataAll,便于直接访问
  */
 
 function applyAttr(element){

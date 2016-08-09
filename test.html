@@ -311,4 +311,98 @@ HTML字符实体编码 < 和 >
 <script src="./quicksort.js" type="text/javascript"></script>
 <script src="./trigger.js" type="text/javascript"></script>
 <script src="./upload.js" type="text/javascript"></script>
+<script>
+var $ = {
+    setOpacity:function(element,opacity){
+        opacity = opacity>1?1:opacity;
+        opacity = opacity<0?0:opacity;
+        if(document.all){
+            element.filter.alpha.opacity = opacity*100;
+            element.style.zoom = 1;
+        }else{
+            element.style.opacity = opacity;
+        }
+        return  opacity;
+    },
+    fadeIn:function(element,time){
+        var start = new Date()*1;
+        element.style.display = 'block';
+        $.setOpacity(element,0);
+        var fadeInPlay = setInterval(function(){
+            var end = new Date()*1;
+            if($.setOpacity(element,(end-start)/time)>=1){
+                clearInterval(fadeInPlay);
+            }
+        },25);
+    },
+    fadeOut:function(element,time){
+        var start = new Date()*1;
+        element.style.display = 'block';
+        $.setOpacity(element,1);
+            var fadeOutPlay = setInterval(function(){
+            var end = new Date()*1;
+            if($.setOpacity(element,1-((end-start)/time))<=0){
+                clearInterval(fadeOutPlay);
+				element.style.display = 'none';
+            }
+        },25);
+    },
+}
+var tips = (function(){
+    var out = tag('div','tipspop');
+    out.style.display = 'none';
+    out.style.position = 'fixed';
+    var main = out.append('div','popshow-tips');
+    var show = function(option){
+        document.body.appendChild(out);
+        if(!option){
+            var option = {};
+        }
+        var config = {
+            img:option.img||'<span class="mr5"></span>',
+            text:option.text||''
+        }
+        main.innerHTML = config.img+config.text;
+        out.style.display = 'block';
+        out.style.left = (window.innerWidth-out.offsetWidth)/2+'px';
+        out.style.top = (window.innerHeight-out.offsetHeight)/2+'px';
+        $.fadeIn(out,200);
+        out.style.zIndex = 2000;
+    };
+    return {
+        show:show
+    }
+})();
+
+function tag(tagName,props){
+    var Tag = document.createElement(tagName);
+    if(typeof props == 'string'){
+        Tag.className = props;
+    }
+    else{
+        if(props != undefined){
+            /*if(props.style){
+             updateObject(props.style,tag.style);
+             delete props.style;
+             }*/
+            updateObject(props,Tag);
+        }
+    }
+    Tag.append = function (tagName, props) {
+        return Tag.appendChild(tag(tagName, props));
+    }
+    return Tag;
+}
+function updateObject(inputValue,outputValue){
+    for(var key in inputValue) {
+        if (inputValue[key] && inputValue[key].constructor == Object) {
+            outputValue[key] = this.updateObject(inputValue[key], outputValue[key]);
+        }
+        else if (inputValue[key] != undefined) {
+            outputValue[key] = inputValue[key];
+        }
+    }
+    return outputValue;
+}
+</script>
 </html>

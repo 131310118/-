@@ -98,6 +98,7 @@ function ajax(option){
         }
         option.complete && option.complete(xhr);
     }
+
     function addHeader(obj){
         if(obj){
             for(var name in obj){
