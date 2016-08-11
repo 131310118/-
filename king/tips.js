@@ -43,6 +43,7 @@ var tips = (function(){
     out.style.display = 'none';
     out.style.position = 'fixed';
     var main = out.append('div','popshow-tips');
+    var op = out.append('div','tc mt10');
     var close = function(){
         $.fadeOut(out,200);
     }
@@ -54,11 +55,12 @@ var tips = (function(){
         var config = {
             img:option.img||'<span class="mr5"></span>',
             text:option.text||'',
+            autoHide:option.autoHide||true,
             confirm:option.confirm||false,
             cancel:option.cancel||false,
             callback:{
-                confirm:option.confirm||false,
-                cancel:option.cancel||false
+                confirm:option.callback.confirm||false,
+                cancel:option.callback.cancel||false
             }
         };
         main.innerHTML = config.img+config.text;
@@ -67,29 +69,30 @@ var tips = (function(){
         out.style.top = (window.innerHeight-out.offsetHeight)/2+'px';
         $.fadeIn(out,200);
         out.style.zIndex = 2000;
-
-        var op = tag('div','tc mt10');
-        if(config.confirm){
-            if(!out.confirm){
-                var confirm = op.append('div','btn btn-primary btn-sm mr10');
+        if(config.confirm) {
+            if (!out.confirm) {
+                var confirm = op.append('div', 'btn btn-primary btn-sm mr10');
                 out.confirm = confirm;
                 confirm.innerHTML = config.confirm;
-                confirm.addEventListener('click',function(){
+                confirm.addEventListener('click', function () {
                     tips.close();
-                    if(config.callback.confirm){
+                    if (config.callback.confirm) {
                         config.callback.confirm();
                     }
                 })
-            }else{
-                if(out.confirm){
-                    out.removeChild(out.confirm);
-                    out.confirm = false;
-                }
             }
+        }else {
+            if (out.confirm) {
+                op.removeChild(out.confirm);
+                out.confirm = false;
+            }
+        };
+        if(config.cancel){
             if(config.cancel){
                 if(!out.cancel){
-                    var cancel = op.append(tag('div','btn btn-default btn-sm'));
+                    var cancel = op.append('div','btn btn-default btn-sm');
                     out.cancel = cancel;
+                    cancel.innerHTML = config.cancel;
                     cancel.addEventListener('click',function(){
                         tips.close();
                         if(config.callback.cancel){
@@ -97,12 +100,15 @@ var tips = (function(){
                         }
                     })
                 }
-            }else{
-                if(out.cancel){
-                    out.removeChild(out.cancel);
-                    out.cancel = false;
-                }
             }
+        }else{
+            if(out.cancel){
+                op.removeChild(out.cancel);
+                out.cancel = false;
+            }
+        };
+        if(config.autoHide){
+            setTimeout(tips.close,2000);
         }
     };
     return {

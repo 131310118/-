@@ -89,14 +89,16 @@ function ajax(option){
     xhr.onreadystatechange = function(){
         if(xhr.readyState == 4){
             if(xhr.status == 200){
-                if(option.dataType.toLowerCase() == 'json'){
+                if(option.dataType && option.dataType.toLowerCase() == 'json'){
+                    option.success && option.success(JSON.parse(xhr.response));
+                }else{
                     option.success && option.success(JSON.parse(xhr.response));
                 }
             }else{
                 option.error && option.error(xhr);
             }
+            option.complete && option.complete(xhr);
         }
-        option.complete && option.complete(xhr);
     }
 
     function addHeader(obj){
