@@ -55,7 +55,7 @@ var tips = (function(){
         var config = {
             img:option.img||'<span class="mr5"></span>',
             text:option.text||'',
-            autoHide:option.autoHide||true,
+            autoHide:option.autoHide&&true,
             confirm:option.confirm||false,
             cancel:option.cancel||false,
             callback:{
