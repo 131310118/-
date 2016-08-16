@@ -511,7 +511,7 @@ var kETool_i = document.getElementById('kETool_i');
 			var selection = KEStatus.selection;
 			var range = KEStatus.range;
 			var B = KEStatus['is'+commond](KEStatus.range);
-			KEStatus.setFocus()
+			KEStatus.setFocus();
 			document.execCommand(commond);
 			KEStatus.saveCusorPos();
 			if(KEStatus.range.startContainer===KEStatus.range.endContainer&&range.startOffset==range.endOffset){
