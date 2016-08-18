@@ -44,11 +44,11 @@
 #kingEditor #kETool_p {
   background-position: -360px -20px;
 }
-#kingEditor #kETool_img {
+#kingEditor #kETool_getImg {
   background-position: -380px 0px;
   overflow:hidden;
 }
-#kingEditor #kETool_img input{
+#kingEditor #kETool_getImg input{
   opacity:0;
 }
 #kingEditor #kEMain{
@@ -203,6 +203,6 @@
     left: 4px;
     margin-top: 1px;
 }
-#kingEditor #border{
+#kingEditor #kETool_border{
 	background-position: -160px -40px;
 }

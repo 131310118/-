@@ -822,7 +822,7 @@ document.body.addEventListener('mousemove',function(e){
 		setPosition();
 	
 	}
-})
+});
 KEObject.kETool_down.onclick = function(){
 	event.stopPropagation();
 	event.preventDefault();
@@ -832,7 +832,7 @@ KEObject.kETool_down.onclick = function(){
 	}else{
 		ele.className = 'kETool_LHDown';
 	}
-}
+};
 KEObject.kETool_LHDown.addEventListener('click',function(e){
 	e.stopPropagation();
 	e.preventDefault();
@@ -851,4 +851,4 @@ KEObject.kETool_LHDown.addEventListener('click',function(e){
 		var em = tar.innerText;
 		KEStatus.setLineHeight(em);
 	}
-})
+});
