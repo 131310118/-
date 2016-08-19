@@ -42,13 +42,23 @@ var KEStatus = {
                 }else if(obj.nodeType==3&&(obj.data=="​"||obj.data=='')){
                     obj.parentNode&&obj.parentNode.removeChild(obj);
                 }else if(obj.childNodes&&obj.childNodes.length&&obj.childNodes[0].nodeType==3&&obj.childNodes[0].length>1){
-                    if(obj.childNodes[0]!=KEStatus.range.commonAncestorContainer){
-                        obj.childNodes[0].data = obj.childNodes[0].data.replace("​",'');
-                    }else{
-                        l.push(obj);
+                    var s = KEStatus.range.startOffset,e = KEStatus.range.endOffset;
+                    obj.childNodes[0].data = obj.childNodes[0].data.replace("​",'');
+                    if(s!=KEStatus.range.startOffset){
+                        KEStatus.range.setStart(KEStatus.range.startContainer,s-1);
+                    }
+                    if(e!=KEStatus.range.endOffset){
+                        KEStatus.range.setEnd(KEStatus.range.endContainer,e-1);
                     }
                 }else if(obj.nodeType==3){
+                    var s = KEStatus.range.startOffset,e = KEStatus.range.endOffset;
                     obj.data = obj.data.replace("​",'');
+                    if(s!=KEStatus.range.startOffset){
+                        KEStatus.range.setStart(KEStatus.range.startContainer,s-1);
+                    }
+                    if(e!=KEStatus.range.endOffset){
+                        KEStatus.range.setEnd(KEStatus.range.endContainer,e-1);
+                    }
                 }
             }
         }
@@ -258,7 +268,7 @@ var KEStatus = {
 var KECommands = {
     execCommandTag:function(status,nodeName,option){
         if(!KEStatus.isMultiLine){
-            var b,obj,ec,range;
+            var b,obj,ec,range,length;
             if(!KEStatus.status[status].status){
                 b = tag(nodeName,option);
                 if(KEStatus.range.collapsed){
@@ -417,128 +427,48 @@ var KECommands = {
                 }
                 KEStatus.select();
             }else{
-                while(true) {
+                while(true){
                     var rg = KEStatus.range.cloneRange();
                     if(s==KEStatus.isMultiLine.start){
-                        var node = KEStatus.status[status].node;
-                        //截取前半部分-start
-                        range = rg.cloneRange();
-                        while (true) {
-                            if (range.startContainer.nodeType == 3) {
-                                if (range.startOffset == 0 || (range.startOffset == 1 && range.startContainer.data[0] == '')) {
-                                    range.setStartBefore(range.startContainer);
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                if (range.startOffset == 0) {
-                                    range.setStartBefore(range.startContainer);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                        range.collapse(true);
-                        range.setStart(node, 0);
-                        b = tag(nodeName, option);
-                        b.appendChild(range.extractContents());
-                        if ((b.childNodes.length && b.childNodes[0].data == "​") || !b.childNodes.length) {
-                        } else {
-                            node.parentNode.insertBefore(b, node);
-                        }
-                        //截取前半部分-end
-                        //截取中间部分-start
-                        range = rg.cloneRange();
-                        while (range.startContainer != node && range.endContainer != range.commonAncestorContainer) {
-                            if (range.startContainer.nodeType == 3) {
-                                if (range.startOffset == 0 || (range.startOffset == 1 && range.startContainer.data[0] == '')) {
-                                    range.setStartBefore(range.startContainer);
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                if (range.startOffset == 0) {
-                                    range.setStartBefore(range.startContainer);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                        while (range.endContainer != node && range.endContainer != range.commonAncestorContainer) {
-                            if (range.endContainer.nodeType == 3) {
-                                if (range.endContainer.length == range.endOffset) {
-                                    range.setEndAfter(range.endContainer);
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                if (range.endContainer.childNodes.length == range.endOffset) {
-                                    range.setEndAfter(range.endContainer);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                        if (rg.collapsed) {
-                            ec = tag(nodeName, option);
-                            ec.innerHTML = '&#8203;';
-                            range.setStart(ec, 0);
-                            range.setEnd(ec, 1);
-                            ec = range.extractContents();
-                            node.parentNode.insertBefore(ec, node);
-                            KEStatus.emptyList.push(node.previousSibling);
-                            rg.setEnd(node.previousSibling, 1);
-                            if (node.previousSibling.previousSibling && node.previousSibling.previousSibling.nodeType == 3) {
-                                rg.setStartBefore(node.previousSibling);
-                                rg.collapse(true);
-                                node.parentNode.removeChild(node.previousSibling);
-                            }
-                            rg.collapse(false);
-                            KEStatus.select();
-                        } else {
-                            ec = range.extractContents();
-                            b = tag(nodeName, option);
-                            b.appendChild(ec);
-                            KEStatus.mergeChild(b, nodeName, option);
-                            range.setStart(b, 0);
-                            obj = KEStatus.getRangeEndContainer(b);
-                            range.setEnd(obj, obj.length);
-                            ec = range.extractContents();
-                            obj = node.previousSibling;
-                            node.parentNode.insertBefore(ec, node);
-                            if (!obj) {
-                                obj = node.parentNode.firstChild;
-                            } else {
-                                obj = obj.nextSibling;
-                            }
-                            rg.setStart(KEStatus.getRangeStartContainer(obj), 0);
-                            obj = KEStatus.getRangeEndContainer(node.previousSibling);
-                            rg.setEnd(obj, obj.length);
-                            KEStatus.select();
-                        }
-                        //截取中间部分-end
-                        while (node.childNodes.length && node.firstChild.nodeType == 3 && (node.firstChild.data == "​" || node.firstChild.data == '')) {
-                            node.removeChild(node.firstChild);
-                        }
-                        if (!node.childNodes.length) {
-                            node.parentNode.removeChild(node);
-                        }
-                    }else if(s!=e){
-                        rg.setStart(s,0);
+                        rg.setEndAfter(s);
+                        b = rg.extractContents();
+                        KEStatus.mergeChild(b.firstChild,nodeName,option);
                         rg.setEndAfter(s.lastChild);
-                        b = tag(nodeName,option);
-                        b.appendChild(rg.extractContents());
-                        KEStatus.mergeChild(b,nodeName,option);
-                        rg.insertNode(b);
-                        KEStatus.mergeEmpty(b);
-                    }else{
+                        while(length = b.childNodes[0].childNodes.length){
+                            if(b.childNodes[0].childNodes[length-1].nodeName=='BR'){
+                                b.childNodes[0].removeChild(b.childNodes[0].childNodes[length-1]);
+                                continue;
+                            }
+                            obj = b.childNodes[0].childNodes[length-1];
+                            rg.insertNode(obj);
+                        }
+                        KEStatus.range.setStart(KEStatus.getRangeStartContainer(obj),0);
+                        KEStatus.mergeEmpty(obj);
+                    }else if(s!=e){
+                        KEStatus.mergeChild(s,nodeName,option);
+                    }else if(s==e){
+                        rg.setStartBefore(s);
+                        b = rg.extractContents();
+                        KEStatus.mergeChild(b.firstChild,nodeName,option);
                         rg.setStart(s,0);
-                        b = tag(nodeName,option);
-                        b.appendChild(rg.extractContents());
-                        KEStatus.mergeChild(b,nodeName,option);
-                        rg.insertNode(b);
-                        KEStatus.mergeEmpty(b);
+                        obj = null;
+                        while(length = b.childNodes[0].childNodes.length){
+                            if(b.childNodes[0].childNodes[length-1].nodeName=='BR'){
+                                b.childNodes[0].removeChild(b.childNodes[0].childNodes[length-1]);
+                                continue;
+                            }
+                            if(!obj){
+                                obj = b.childNodes[0].childNodes[length-1];
+                            }
+                            rg.insertNode(b.childNodes[0].childNodes[length-1]);
+                        }
+                        b = KEStatus.getRangeEndContainer(obj);
+                        KEStatus.range.setEnd(b, b.length);
+                        KEStatus.mergeEmpty(obj);
+                        KEStatus.select();
+                        break;
                     }
+                    s = s.nextSibling;
                 }
             }
         }
