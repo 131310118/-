@@ -2,6 +2,10 @@
  * Created by wangj on 2016/8/13.
  */
 
+var KEObject = {
+    kETool_down:document.getElementById('kETool_LH').getElementsByClassName('kETool_down')[0],
+    kETool_LHDown:document.getElementById('kETool_LH').getElementsByClassName('kETool_LHDown')[0]
+};
 var KEStatus = {
     selection:undefined,
     range:undefined,
@@ -149,6 +153,7 @@ var KEStatus = {
         setTools('isItalic','I',kETool_i);
         setTools('isUnderline','U',kETool_u);
         setTools('isBorder','SPAN',kETool_border,{style:{border:'1px solid rgb(0, 0, 0)'}});
+        //判断选中多行-start
         var s = KEStatus.range.startContainer,e = KEStatus.range.endContainer;
         while(s.parentNode!=kEMainContent){
             s = s.parentNode;
@@ -164,6 +169,27 @@ var KEStatus = {
         }else{
             KEStatus.isMultiLine = false;
         }
+        //判断选中多行-end
+        //行高-start
+        var s = KEStatus.range.startContainer;
+        var lhMap = {
+            '1':0,'1.5':1,'1.75':2,'2':3,'3':4,'4':5,'5':6
+        };
+        while(s.parentNode!==kEMainContent){
+            s = s.parentNode;
+        }
+        if(s.style.lineHeight){
+            var lh = s.style.lineHeight;
+            var n = lh.substring(0,lh.length-2);
+            KEObject.kETool_LHDown.getElementsByClassName('on')[0].className = 'option';
+            KEObject.kETool_LHDown.children[lhMap[n]].className = 'option on';
+        }else{
+            if(KEObject.kETool_LHDown.getElementsByClassName('on')[0]){
+                KEObject.kETool_LHDown.getElementsByClassName('on')[0].className = 'option';
+            }
+            KEObject.kETool_LHDown.children[0].className = 'option on';
+        }
+        //行高-end
         function setTools(status,nodeName,element,option){//状态，节点标签，节点
             var node = KEStatus.range.startContainer;
             while(node!=kEMainContent){
@@ -267,8 +293,8 @@ var KEStatus = {
 };
 var KECommands = {
     execCommandTag:function(status,nodeName,option){
+        var b,obj,ec,range,length;
         if(!KEStatus.isMultiLine){
-            var b,obj,ec,range,length;
             if(!KEStatus.status[status].status){
                 b = tag(nodeName,option);
                 if(KEStatus.range.collapsed){
@@ -396,7 +422,6 @@ var KECommands = {
             }
         }else{
             var s = KEStatus.isMultiLine.start,e = KEStatus.isMultiLine.end;
-            var b,obj,ec,range;
             if(!KEStatus.status[status].status){
                 while(true){
                     var rg = KEStatus.range.cloneRange();
@@ -524,7 +549,7 @@ document.onmouseup = function(e){
     if(KEStatus.isImgDown){
         KEStatus.isImgDown = false;
     }
-}
+};
 kEMain.onblur = function(){
     KEStatus.isKEMCDown = false;
     KEStatus.saveCusorPos();
@@ -547,10 +572,17 @@ kEMain.addEventListener('keydown',function(e){
     }
 });
 //内容为空无法删除-end
+kEMain.onpaste = function(e){
+    KECommands.save();
+    html = e.clipboardData.getData('text/html');
+    html = html.replace(/strong>/g,'b>');
+    html = html.replace(/<em>/g,'i>');
+    e.clipboardData.setData('text/plain',html);
+};
 kEMain.addEventListener('keyup',function(){
     KEStatus.saveCusorPos();
     KEStatus.initTools();
-})
+});
 kETools.onclick = function(e){
     switch(e.target.id) {
         case 'kETool_b':
@@ -564,6 +596,52 @@ kETools.onclick = function(e){
             break;
         case 'kETool_border':
             KEStatus.execCommand( 'Border');
+            break;
+        case 'kETool_LHL':
+            KEStatus.execCommand( 'LineHeight');
+            break;
+        case 'kETool_p':
+            if(!KEStatus.range){
+                kEMain.focus();
+                KEStatus.saveCusorPos();
+                KEStatus.initTools(KEStatus.range);
+            }
+            KEStatus.setFocus();
+            KECommands.save();
+            if(kETool_p.className == 'kETool_btn kETool_bg checked'){
+                kETool_p.className = 'kETool_btn kETool_bg';
+                kEMain.onpaste = function(){
+                    html = e.clipboardData.getData('text/html');
+                    e.clipboardData.setData('text/plain',html);
+                };
+            } else{
+                kETool_p.className = 'kETool_btn kETool_bg checked';
+                kEMain.onpaste = function(e){
+                    e.preventDefault();
+                    KECommands['save']();
+                    var text = null;
+                    var html = null;
+                    var textRange = KEStatus.range;
+
+                    if(window.clipboardData && clipboardData.setData) {
+                        // IE
+                        text = window.clipboardData.getData('text');
+                    } else {
+                        text =  e.clipboardData.getData("text/plain");
+                        text = text.replace(/(\r\n){2}/g,'\r\n');
+
+                        html = e.clipboardData.getData('text/html');
+                    }
+                    if (document.body.createTextRange) {
+                        textRange.text = text;
+                        textRange.collapse(false);
+                        textRange.select();
+                    } else {
+                        // Chrome之类浏览器
+                        document.execCommand("insertText", false, text);
+                    }
+                }
+            }
             break;
     }
 };
@@ -681,5 +759,34 @@ document.body.addEventListener('mousemove',function(e){
         KEStatus.modifyImg.style.width = x*1+e.movementX+'px';
         KEStatus.modifyImg.style.height = y*1+e.movementY+'px';
         setPosition();
+    }
+});
+KEObject.kETool_down.onclick = function(){
+    event.stopPropagation();
+    event.preventDefault();
+    var ele = KEObject.kETool_LHDown;
+    if(ele.className=='kETool_LHDown'){
+        ele.className = 'kETool_LHDown on';
+    }else{
+        ele.className = 'kETool_LHDown';
+    }
+};
+KEObject.kETool_LHDown.addEventListener('click',function(e){
+    e.stopPropagation();
+    e.preventDefault();
+    var tar = e.target;
+    if(tar.className=='option'||tar.className=='option on'){
+        if(!KEStatus.range){
+            kEMain.focus();
+            KEStatus.saveCusorPos();
+        }
+        var on = this.getElementsByClassName('on')[0];
+        if(on){
+            on.className = 'option';
+        }
+        tar.className = 'option on';
+        this.className = 'kETool_LHDown';
+        var em = tar.innerText;
+        KEStatus.setLineHeight(em);
     }
 });

@@ -4,8 +4,8 @@ var kETool_b = document.getElementById('kETool_b');
 var kETool_i = document.getElementById('kETool_i');
  */
  var KEObject = {
-	 'kETool_down':document.getElementById('kETool_LH').getElementsByClassName('kETool_down')[0],
-	 'kETool_LHDown':document.getElementById('kETool_LH').getElementsByClassName('kETool_LHDown')[0],
+	 kETool_down:document.getElementById('kETool_LH').getElementsByClassName('kETool_down')[0],
+	 kETool_LHDown:document.getElementById('kETool_LH').getElementsByClassName('kETool_LHDown')[0],
  }
  var KEStatus = {
     selection:undefined,
