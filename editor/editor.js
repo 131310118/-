@@ -31,12 +31,8 @@ var KEStatus = {
         KEStatus.selection.removeAllRanges();
         KEStatus.selection.addRange(KEStatus.range);
     },
-    //命令入口
-    execCommand:function(command){
-        if(!KEStatus.range){
-            kEMain.focus();
-            KEStatus.saveCusorPos();
-        }
+    //去除标签占位符
+    delEmptyList:function(){
         var l = [];
         while(KEStatus.emptyList.length){
             obj = KEStatus.emptyList.pop();
@@ -67,6 +63,15 @@ var KEStatus = {
             }
         }
         KEStatus.emptyList = l;
+        KEStatus.select();
+    },
+    //命令入口
+    execCommand:function(command){
+        if(!KEStatus.range){
+            kEMain.focus();
+            KEStatus.saveCusorPos();
+        }
+        KEStatus.delEmptyList();
         KECommands['save']();
         KECommands[command]();
         KEStatus.initTools();
@@ -142,7 +147,7 @@ var KEStatus = {
     mergeEmpty:function(b){
         while(b.previousSibling&& b.previousSibling.nodeType==3&& (b.previousSibling.data=="​"||b.previousSibling.data=='')){
             b.parentNode.removeChild(b.previousSibling)
-        };
+        }
         while(b.nextSibling&& b.nextSibling.nodeType==3&& (b.nextSibling.data=="​"||b.nextSibling.data=='')){
             b.parentNode.removeChild(b.nextSibling);
         }
@@ -229,7 +234,13 @@ var KEStatus = {
                         var i=0;
                         var prev = parent.previousSibling;
                         while(prev){
-                            i++;
+                            if(prev.nodeType==3&&(prev.data=="​"||prev.data=='')){
+                                prev = prev.previousSibling;
+                                continue;
+                            }
+                            if(!(prev.nodeType==3&&prev.previousSibling&&prev.previousSibling.nodeType==3)){
+                                i++;
+                            }
                             prev = prev.previousSibling;
                         }
                         array.push(i);
@@ -246,24 +257,22 @@ var KEStatus = {
     //还原工作
     setWork:function(arr){
         var last = arr.pop();
-        kEMainContent.innerHTML = last.content;
-        !function(){
-            var s = unrangeMap(last.range.start);
-            var e = unrangeMap(last.range.end);
-            KEStatus.range.setStart(s.container, s.start);
-            KEStatus.range.setEnd(e.container, e.start);
-            function unrangeMap(array){
-                var root = kEMainContent,container;
-                for(var i=array.length-1;i>0;i--){
-                    container = root.childNodes[array[i]];
-                    root = container;
-                }
-                return {
-                    start:array[0],
-                    container:container
-                }
+        function unrangeMap(array){
+            var root = kEMainContent,container;
+            for(var i=array.length-1;i>0;i--){
+                container = root.childNodes[array[i]];
+                root = container;
             }
-        }();
+            return {
+                start:array[0],
+                container:container
+            }
+        }
+        kEMainContent.innerHTML = last.content;
+        var s = unrangeMap(last.range.start);
+        var e = unrangeMap(last.range.end);
+        KEStatus.range.setStart(s.container, s.start);
+        KEStatus.range.setEnd(e.container, e.start);
         KEStatus.select();
     },
     compare:function(inputValue,outputValue){
@@ -289,6 +298,70 @@ var KEStatus = {
             }
         }
         return outputValue;
+    },
+    paste:function(e){
+        KECommands.save();
+        var styleSheet = {
+            color:'rgb(0, 0, 0)',
+            'font-family':'Simsun',
+            'font-size':'medium',
+            'font-style':'normal',
+            'font-variant-ligatures':'normal',
+            'font-variant-caps':'normal',
+            'font-weight':'normal',
+            'letter-spacing':'normal',
+            'line-height':'normal',
+            orphans:'2',
+            'text-align':'start',
+            'text-indent':'0px',
+            'text-transform':'none',
+            'white-space':'normal',
+            widows:'2',
+            'word-spacing':'0px',
+            '-webkit-text-stroke-width':'0px',
+            float:'none',
+            display:'inline'
+        };
+        e.preventDefault();
+        html = e.clipboardData.getData('text/html');
+        html = html.replace(/strong>/g,'b>');
+        html = html.replace(/<em>/g,'i>');
+        var span = document.createElement('span'),ele,flag=false;
+        span.innerHTML = html.match(/<!--StartFragment-->(.*)<!--EndFragment-->/)[1];
+        while(ele = span.lastChild){
+            var obj = document.createElement(ele.nodeName);
+            obj.innerHTML = ele.innerHTML;
+            if(!flag){
+                flag = obj;
+            }
+            for(var key=0;key<ele.style.length;key++){
+                var t = ele.style[key],ts = ele.style[t];
+                if(ts!=styleSheet[t]){
+                    obj.style[t] = ts;
+                }
+            }
+            if(!obj.style.length&&obj.nodeName=='SPAN'){
+                KEStatus.range.insertNode(obj);
+                KEStatus.range.setEndBefore(obj);
+                while(obj.firstChild){
+                    obj.parentNode.insertBefore(obj.firstChild,obj);
+                }
+                if(flag==obj){
+                    flag = obj.previousSibling;
+                }
+                obj.parentNode.removeChild(obj);
+                KEStatus.select();
+            }else{
+                KEStatus.range.insertNode(obj);
+                KEStatus.range.setEndBefore(obj);
+                KEStatus.select();
+            }
+            span.removeChild(ele);
+        }
+        obj = KEStatus.getRangeEndContainer(flag);
+        KEStatus.range.setEnd(obj,obj.length);
+        KEStatus.range.collapse(false);
+        KEStatus.select();
     }
 };
 var KECommands = {
@@ -569,15 +642,16 @@ kEMain.addEventListener('keydown',function(e){
     }else if(e.keyCode==89){
         event.preventDefault();
         KECommands['redo']();
-    }
+    }/*else if(e.keyCode==67){
+        KECommands['copy']();
+    }*/
 });
 //内容为空无法删除-end
 kEMain.onpaste = function(e){
-    KECommands.save();
-    html = e.clipboardData.getData('text/html');
-    html = html.replace(/strong>/g,'b>');
-    html = html.replace(/<em>/g,'i>');
-    e.clipboardData.setData('text/plain',html);
+    KEStatus.paste(e);
+};
+kEMain.oncopy = function(){
+    KEStatus.delEmptyList();
 };
 kEMain.addEventListener('keyup',function(){
     KEStatus.saveCusorPos();
@@ -607,13 +681,12 @@ kETools.onclick = function(e){
                 KEStatus.initTools(KEStatus.range);
             }
             KEStatus.setFocus();
-            KECommands.save();
+            //KECommands.save();
             if(kETool_p.className == 'kETool_btn kETool_bg checked'){
                 kETool_p.className = 'kETool_btn kETool_bg';
-                kEMain.onpaste = function(){
-                    html = e.clipboardData.getData('text/html');
-                    e.clipboardData.setData('text/plain',html);
-                };
+                kEMain.onpaste = function(e){
+                    KEStatus.paste(e);
+                }
             } else{
                 kETool_p.className = 'kETool_btn kETool_bg checked';
                 kEMain.onpaste = function(e){
