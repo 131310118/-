@@ -300,68 +300,117 @@ var KEStatus = {
         return outputValue;
     },
     paste:function(e){
-        KECommands.save();
-        var styleSheet = {
-            color:'rgb(0, 0, 0)',
-            'font-family':'Simsun',
-            'font-size':'medium',
-            'font-style':'normal',
-            'font-variant-ligatures':'normal',
-            'font-variant-caps':'normal',
-            'font-weight':'normal',
-            'letter-spacing':'normal',
-            'line-height':'normal',
-            orphans:'2',
-            'text-align':'start',
-            'text-indent':'0px',
-            'text-transform':'none',
-            'white-space':'normal',
-            widows:'2',
-            'word-spacing':'0px',
-            '-webkit-text-stroke-width':'0px',
-            float:'none',
-            display:'inline'
-        };
-        e.preventDefault();
-        html = e.clipboardData.getData('text/html');
-        html = html.replace(/strong>/g,'b>');
-        html = html.replace(/<em>/g,'i>');
-        var span = document.createElement('span'),ele,flag=false;
-        span.innerHTML = html.match(/<!--StartFragment-->(.*)<!--EndFragment-->/)[1];
-        while(ele = span.lastChild){
-            var obj = document.createElement(ele.nodeName);
-            obj.innerHTML = ele.innerHTML;
-            if(!flag){
-                flag = obj;
-            }
-            for(var key=0;key<ele.style.length;key++){
-                var t = ele.style[key],ts = ele.style[t];
-                if(ts!=styleSheet[t]){
-                    obj.style[t] = ts;
-                }
-            }
-            if(!obj.style.length&&obj.nodeName=='SPAN'){
-                KEStatus.range.insertNode(obj);
-                KEStatus.range.setEndBefore(obj);
-                while(obj.firstChild){
-                    obj.parentNode.insertBefore(obj.firstChild,obj);
-                }
-                if(flag==obj){
-                    flag = obj.previousSibling;
-                }
-                obj.parentNode.removeChild(obj);
-                KEStatus.select();
+        var d = e.clipboardData.getData('text/html'),html;
+        if(d){
+            KECommands.save();
+            var styleSheet = {
+                color:'rgb(0, 0, 0)',
+                'font-family':'Simsun',
+                'font-size':'medium',
+                'font-style':'normal',
+                'font-variant-ligatures':'normal',
+                'font-variant-caps':'normal',
+                'font-weight':'normal',
+                'letter-spacing':'normal',
+                'line-height':'normal',
+                orphans:'2',
+                'text-align':'start',
+                'text-indent':'0px',
+                'text-transform':'none',
+                'white-space':'normal',
+                widows:'2',
+                'word-spacing':'0px',
+                '-webkit-text-stroke-width':'0px',
+                float:'none',
+                display:'inline'
+            };
+            e.preventDefault();
+            html = d;
+            html = html.replace(/strong>/g,'b>');
+            html = html.replace(/<em>/g,'i>');
+            var span = document.createElement('span'),ele,flag=false;
+            var a = html.match(/<!--StartFragment-->(.*)<!--EndFragment-->/);
+            var b = html.match(/<body>(.*)<\/body>/);
+            if(a&&a.length>1){
+                span.innerHTML = html.match(/<!--StartFragment-->(.*)<!--EndFragment-->/)[1];
+            }else if(b&& b.length>1){
+                span.innerHTML = html.match(/<body>(.*)<\/body>/)[1];
             }else{
-                KEStatus.range.insertNode(obj);
-                KEStatus.range.setEndBefore(obj);
-                KEStatus.select();
+                return;
             }
-            span.removeChild(ele);
+            var block = KEStatus.isBlock(span),range;
+            while(ele = span.lastChild){
+                var obj = document.createElement(ele.nodeName);
+                obj.innerHTML = ele.innerHTML;
+                if(!flag){
+                    flag = obj;
+                }
+                for(var key=0;key<ele.style.length;key++){
+                    var t = ele.style[key],ts = ele.style[t];
+                    if(ts!=styleSheet[t]){
+                        obj.style[t] = ts;
+                    }
+                }
+                range = KEStatus.range.cloneRange();
+                if(!obj.style.length&&obj.nodeName=='SPAN'){
+                    range.insertNode(obj);
+                    range.setEndBefore(obj);
+                    while(obj.firstChild){
+                        obj.parentNode.insertBefore(obj.firstChild,obj);
+                    }
+                    if(flag==obj){
+                        flag = obj.previousSibling;
+                    }
+                    obj.parentNode.removeChild(obj);
+                    KEStatus.select();
+                }else{
+                    range.insertNode(obj);
+                    range.setEndBefore(obj);
+                    KEStatus.select();
+                }
+                span.removeChild(ele);
+            }
+            obj = KEStatus.getRangeEndContainer(flag);
+            KEStatus.range.setEnd(obj,obj.length);
+            KEStatus.range.collapse(false);
+            KEStatus.select();
+        }else{
+            KEStatus.pastePlain(e);
         }
-        obj = KEStatus.getRangeEndContainer(flag);
-        KEStatus.range.setEnd(obj,obj.length);
-        KEStatus.range.collapse(false);
-        KEStatus.select();
+    },
+    pastePlain:function(e){
+        e.preventDefault();
+        var text =  e.clipboardData.getData("text/plain");
+        if(text){
+            KECommands['save']();
+            var textRange = KEStatus.range;
+
+            if(window.clipboardData && clipboardData.setData) {
+                // IE
+                text = window.clipboardData.getData('text');
+            } else {
+                text =  e.clipboardData.getData("text/plain");
+                text = text.replace(/(\r\n){2}/g,'\r\n');
+            }
+            if (document.body.createTextRange) {
+                textRange.text = text;
+                textRange.collapse(false);
+                textRange.select();
+            } else {
+                // Chrome之类浏览器
+                document.execCommand("insertText", false, text);
+            }
+        }
+    },
+    isBlock:function(element) {
+        var child = element.firstChild;
+        while(child){
+            if (child.style.display == 'block') {
+                return true;
+            }
+            child = child.nextSibling;
+        }
+        return false;
     }
 };
 var KECommands = {
@@ -689,31 +738,7 @@ kETools.onclick = function(e){
                 }
             } else{
                 kETool_p.className = 'kETool_btn kETool_bg checked';
-                kEMain.onpaste = function(e){
-                    e.preventDefault();
-                    KECommands['save']();
-                    var text = null;
-                    var html = null;
-                    var textRange = KEStatus.range;
-
-                    if(window.clipboardData && clipboardData.setData) {
-                        // IE
-                        text = window.clipboardData.getData('text');
-                    } else {
-                        text =  e.clipboardData.getData("text/plain");
-                        text = text.replace(/(\r\n){2}/g,'\r\n');
-
-                        html = e.clipboardData.getData('text/html');
-                    }
-                    if (document.body.createTextRange) {
-                        textRange.text = text;
-                        textRange.collapse(false);
-                        textRange.select();
-                    } else {
-                        // Chrome之类浏览器
-                        document.execCommand("insertText", false, text);
-                    }
-                }
+                kEMain.onpaste = KEStatus.pastePlain(e);
             }
             break;
     }
