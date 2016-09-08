@@ -48,6 +48,7 @@
 
         #fs {
             margin-top: 20px;
+            min-width:100%;
         }
     </style>
 </head>
@@ -58,9 +59,22 @@
 
     <form name="port_scan" onsubmit="return false">
         <label for="ip">IP Address: </label><input type="text" id="ip" size="15"/>
-        <label for="num">number:</label><input type="text" id="num"/>
         <label for="start_port">Start Port: </label><input type="text" id="start_port" size="5"/>
         <label for="end_port">End Port: </label><input type="text" id="end_port" size="5"/>
+        <div>
+            <div>
+                <label for="digit">digit:</label><input type="text" id="digit"/>-<input type="text" id="todigit"/>
+            </div>
+            <div>
+                <input type="checkbox" name="neednum"><label for="num">number:</label><input type="text" id="num"/>-<input type="text" id="tonum"/>
+            </div>
+            <div>
+                <input type="checkbox" name="needLetter"><label for="Letter">Letter:</label><input type="text" id="Letter"/>-<input type="text" id="toLetter"/>
+            </div>
+            <div>
+                <label for="RegExp">RegExp:</label><input type="text" id="RegExp"/>
+            </div>
+        </div>
         <input type="submit" value="Scan" style="margin-left:10px" onclick="scan_ports()"/>
         <br>
         Protocol :
@@ -100,14 +114,22 @@
     var current_port = -1;
     //var ps_open_ports = [];
     //var ps_maybe_open_ports = [];
-    var closed_port_max = 2000;
+    var closed_port_max = 1000;
+    var closed_port_min = 200;
     var open_port_max = 1000;
     var maybe_open_min = 10;
-    var minInterval;//两次请求最小间隔时间
+    //var minInterval;//两次请求最小间隔时间
+    var interval;
+    var reg;
+    var isReg = false;
     var number = [0,1,2,3,4,5,6,7,8,9];
     var universalURL = 'aaaaaaaaaaaaaaaaaaaa';
     var isUniversal = true;//是否是泛域
-    var letter = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'/*,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'*/];
+    var imgMap = [];
+    var openThread = 0;
+    var randomNumber;
+    var letter = [];
+    var letterMap = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'/*,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'*/];
     //var blocked_ports = [0, 1, 7, 9, 11, 13, 15, 17, 19, 20, 21, 22, 23, 25, 37, 42, 43, 53, 77, 79, 87, 95, 101, 102, 103, 104, 109, 110, 111, 113, 115, 117, 119, 123, 135, 139, 143, 179, 389, 465, 512, 513, 514, 515, 526, 530, 531, 532, 540, 556, 563, 587, 601, 636, 993, 995, 2049, 4045, 6000];
     function is_valid_ip(ip) {
         var v_ip = ip.split(".");
@@ -143,16 +165,24 @@
     function log(to_log) {
         document.getElementById('log').innerHTML += to_log + ", ";
     }
-    function init_port_ps() {
+    function init_port_ps(img) {
         if(!isUniversal&&current_port==0){
             isUniversal = false;
             setInterval(results_ps,1000);
-            for(var i=0;i<250;i++){
-                setTimeout(dictonaryScan,1);
+            for(var i=0;i<10;i++){
+                imgMap[i] = imgTag.cloneNode(false);
+                imgMap[i].thread = i;
+                imgMap[i].dictonaryScan = dictonaryScan;
+                setTimeout(function() {
+                    imgMap[openThread].dictonaryScan();
+                    openThread++;
+                },10);
             }
             return 1;
         }else if(!isUniversal&&current_port>0){
-            setTimeout(dictonaryScan,1);
+            //setTimeout(dictonaryScan,1);
+            img.dictonaryScan();
+            //dictonaryScan(thread);
             return 1;
         }
         else if(isUniversal&&(ps_open_ports.length)){
@@ -165,46 +195,136 @@
     }
     function isuniversalURL(){
         if (document.port_scan.protocol[0].checked) {
-            scan_ports_xhr(universalURL);
+            imgMap[0] = imgTag;
+            imgMap[0]['thread'] = 0;
+            imgMap[0]['str'] = universalURL;
+            imgMap[0].scanPortsXhr = scan_ports_xhr;
+            imgMap[0].close = closed_port_min;
+            imgMap[0].scanPortsXhr();
+            //scan_ports_xhr(universalURL,0);
         }
     }
     ajaxIMG.parentNode.removeChild(ajaxIMG);
     function dictonaryScan(){
         if(current_port<num){
-            var str = '',number = current_port,l = number%26;
+            var str = '',number = current_port,l = number%letter.length;
             while(l>=0){
                 var ss = letter[l];
                 ss+=str;
                 str = ss;
-                number = str.length<2?Math.floor(number/26):Math.floor(number/27);
-                l = (number%26==0&&number!=0?26:number%26)-1;
+                //number = str.length<2?Math.floor(number/26):Math.floor(number/27);
+				number = Math.floor(number/letter.length)-1;
+				if(number<0){break;}
+                //l = (number%26==0&&number!=0?26:number%26)-1;
+				l = number%letter.length;
             }
             current_port++;
-            scan_ports_xhr(str);
+            if(isReg){
+                if(!reg.test(str)){
+                    var that = this;
+                    setTimeout(function(){that.dictonaryScan()},1);
+                    return;
+                }
+            }
+            this.scanPortsXhr = scan_ports_xhr;
+            this.str = str;
+            this.close = closed_port_max;
+            this.scanPortsXhr();
+            //scan_ports_xhr(str,i);
         }else{
             if(current_port==num){
                 current_port++;
-                alert('success');
+                //alert('success');
             }
             return;
         }
     }
     function scan_ports() {
+        var i;
         isUniversal = true;
         ip = document.getElementById('ip').value;
         domain = ip.match(/(www.)?(.+)/)[2];
-        num = document.getElementById('num').value;
-        num = num>1?Math.pow(26,num-1)*27:26;
-        if (!is_valid_ip(ip)) {
-            alert("Invalid IP values entered");
-            return;
+        reg = document.getElementById('RegExp').value;
+        if(reg){
+            try{
+                reg = new RegExp(reg);
+            }
+            catch (err) {
+                alert(err);
+                return;
+            }
+            if(reg instanceof RegExp){
+                isReg = true;
+            }else{
+                alert('正则有误');
+                return;
+            }
         }
-        current_port = 0;
-        ps_open_ports = [];
-        ps_maybe_open_ports = [];
-        reset_scan_out();
-        document.getElementById('log').innerHTML += "----------------<br><b>Scan Log:</b><br>";
-        isuniversalURL();
+        if(!isReg){
+            if(document.port_scan.needLetter.checked){
+                var startLetter = document.getElementById('Letter').value.toLowerCase()||'a';
+                var endLetter = document.getElementById('toLetter').value.toLowerCase()||'z';
+                for(i=0;i<26;i++){
+                    if(startLetter==letterMap[i]){
+                        while(i<26){
+                            if(endLetter!=letterMap[i]){
+                                letter.push(letterMap[i]);
+                                i++;
+                            }else{
+                                letter.push(letterMap[i]);
+                                break;
+                            }
+                        }
+                        if(i==26){
+                            alert('字母输入有误');
+                            return;
+                        }
+                    }
+                }
+            }
+            if(document.port_scan.neednum.checked){
+                var startnum = document.getElementById('num').value;
+                var endnum = document.getElementById('tonum').value;
+                startnum = startnum>=0?startnum:0;
+                endnum = endnum>=0?endnum:0;
+                for(i=startnum;i<=endnum;i++){
+                    letter.push(i);
+                }
+            }
+            var startDigit = document.getElementById('digit').value||1;
+            var endDigit = document.getElementById('todigit').value||6;
+            //num = document.getElementById('num').value;
+            num = (function(n){var sum=0;while(n>0){sum+=Math.pow(letter.length,n);n--;}return sum;})(endDigit);
+            //num-=(function(n){var sum=0;while(n>0){sum+=Math.pow(letter.length,n);n--;}return sum;})(startDigit);
+            /*randomNumber = Math.random().toString();
+             randomNumber.replace(".","");
+             if (!is_valid_ip(ip)) {
+             alert("Invalid IP values entered");
+             return;
+             }*/
+            current_port = (function(n){var sum=0;while(n>0){sum+=Math.pow(letter.length,n);n--;}return sum;})(startDigit-1);
+            ps_open_ports = [];
+            ps_maybe_open_ports = [];
+            openThread = 0;
+            reset_scan_out();
+            document.getElementById('log').innerHTML += "----------------<br><b>Scan Log:</b><br>";
+            isuniversalURL();
+        }else{
+            for(i=0;i<26;i++){
+                letter.push(letterMap[i]);
+            }
+            for(i=0;i<10;i++){
+                letter.push(i);
+            }
+            num = (function(n){var sum=0;while(n>0){sum+=Math.pow(letter.length,n);n--;}return sum;})(6);
+            current_port = 0;
+            ps_open_ports = [];
+            ps_maybe_open_ports = [];
+            openThread = 0;
+            reset_scan_out();
+            document.getElementById('log').innerHTML += "----------------<br><b>Scan Log:</b><br>";
+            isuniversalURL();
+        }
     }
     function scan_open_xhr(){
         clearTimeout(this.time);
@@ -212,7 +332,14 @@
         if(this.secondDomain==universalURL){
             isUniversal = true;
         }
-        setTimeout(scan_ports_xhr,closed_port_max);
+        //setTimeout(scan_ports_xhr,closed_port_max);
+        this.scanPortsXhr = scan_ports_xhr;
+        this.str = '';
+        var that = this;
+        setTimeout(function(){
+            that.scanPortsXhr();
+        },10);
+        //this.scanPortsXhr();
         delete this;
     }
     function check_ps_xhr() {
@@ -233,112 +360,231 @@
             }
         }
         isUniversal =false;
-        setTimeout(scan_ports_xhr,closed_port_max);
+        //setTimeout(scan_ports_xhr,closed_port_max);
+        this.str = '';
+        var that = this;
+        setTimeout(function(){
+            that.scanPortsXhr();
+        },10);
+        //scan_ports_xhr('',this.thread);
         delete this;
     }
-    function scan_ports_xhr(str) {
-        if(!str){
-            if (init_port_ps()) {
+    function scan_ports_xhr() {
+        if(!this.str||this.str==''){
+            if (init_port_ps(this)) {
                 return;
             }
         }
-        var img = imgTag.cloneNode(false);
-        img.secondDomain = str;
+        //var img = imgTag.cloneNode(false);
+        var img = this;
+        //img.thread = thread;
+        img.secondDomain = this.str;
         img.onload=scan_open_xhr;
-        img.onerror=function(){
-            clearTimeout(this.time);
-            img.onerror = function(){
-                return;
-            };
-            img.onload = function(){
-                return;
-            };
-            img.src = './default.jpg';
-            if((new Date).getTime() - this.start_time<maybe_open_min){
-                isUniversal = false;
-                setTimeout(scan_ports_xhr,closed_port_max);
-                delete this;
-                return;
-            }
-            var newImg = imgTag.cloneNode(false);
-            newImg.secondDomain = str;
-            newImg.onload = scan_open_xhr;
-            newImg.onerror = check_ps_xhr;
-            try {
-                newImg.src = "http://" + this.secondDomain+'.'+domain + "/favicon.ico"+("?v=" + Math.random()).replace(".","");
-                newImg.start_time = (new Date).getTime();
-                newImg.process = function(){
-                    var interval = (new Date).getTime() - this.start_time;
-                    if (interval >= closed_port_max) {
-                        isUniversal =false;
-                        clearTimeout(this.time);
-                        newImg.onerror = function(){
-                            return;
-                        };
-                        newImg.onload = function(){
-                            return;
-                        };
-                        newImg.src = './default.jpg';
-                        setTimeout(scan_ports_xhr,closed_port_max);
-                        delete this;
-                        return;
-                    }else{
-                        newImg.time = setTimeout(function(){newImg.process()},5);
-                    }
+        /*if(img.str==universalURL){
+            img.onerror=function(){
+                clearTimeout(this.time);
+                img.onerror = function(){
+                    return;
                 };
-                newImg.time = setTimeout(function(){newImg.process()},5);
-                delete img;
-                return;
-            }
-            catch (err) {
-                document.getElementById('result').innerHTML += "<b>Scan stopped. Exception: " + err + "</b>";
-                return;
-            }
-        };
-        try {
-            img.src = "http://" + str+'.'+domain + "/favicon.ico"+("?v=" + Math.random()).replace(".","");
-            img.start_time = (new Date).getTime();
-            var interval = (new Date).getTime() - img.start_time;
-            minInterval = interval;
-            img.process = function(){
-                interval = (new Date).getTime() - this.start_time;
-                minInterval = interval;
-                if (interval >= closed_port_max) {
-                    clearTimeout(this.time);
-                    img.onerror = function(){
-                        return;
-                    };
-                    img.onload = function(){
-                        return;
-                    };
-                    img.src = './default.jpg';
-                    ajaxIMG = imgTag.cloneNode(false);
-                    ajaxIMG.secondDomain = str;
-                    ajaxIMG.onload=scan_open_xhr;
-                    ajaxIMG.onerror=check_ps_xhr;
-                    ajaxIMG.src = "http://" + str+'.'+domain + "/favicon.ico"+("?v=" + Math.random()).replace(".","");
-                    ajaxIMG.start_time = (new Date).getTime();
-                    ajaxIMG.process = function(){
+                img.onload = function(){
+                    return;
+                };
+                img.src = './default.jpg';
+                if((new Date).getTime() - this.start_time<maybe_open_min){
+                    isUniversal = false;
+                    //setTimeout(scan_ports_xhr,closed_port_max);
+                    img.scanPortsXhr();
+                    delete this;
+                    return;
+                }
+                //var newImg = imgTag.cloneNode(false);
+                var newImg = img;
+                newImg.thread = this.thread;
+                newImg.secondDomain = this.str;
+                newImg.onload = scan_open_xhr;
+                newImg.onerror = check_ps_xhr;
+                try {
+                    newImg.src = "http://" + this.secondDomain+'.'+domain + "/favicon.ico"+("?v=" + Math.random()).replace(".","");
+                    newImg.start_time = (new Date).getTime();
+                    newImg.process = function(){
                         var interval = (new Date).getTime() - this.start_time;
                         if (interval >= closed_port_max) {
                             isUniversal =false;
                             clearTimeout(this.time);
-                            ajaxIMG.onerror = function(){
+                            newImg.onerror = function(){
                                 return;
                             };
-                            ajaxIMG.onload = function(){
+                            newImg.onload = function(){
                                 return;
                             };
-                            ajaxIMG.src = './default.jpg';
-                            setTimeout(scan_ports_xhr,closed_port_max);
+                            newImg.src = './default.jpg';
+                            //setTimeout(scan_ports_xhr,closed_port_max);
+                            //scan_ports_xhr('',thread);
+                            this.scanPortsXhr = scan_ports_xhr;
+                            this.str = '';
+                            this.scanPortsXhr();
                             delete this;
                             return;
                         }else{
-                            ajaxIMG.time = setTimeout(function(){ajaxIMG.process()},5);
+                            newImg.time = setTimeout(function(){newImg.process()},5);
                         }
                     };
-                    ajaxIMG.time = setTimeout(function(){ajaxIMG.process()},5);
-                    delete img;
+                    newImg.time = setTimeout(function(){newImg.process()},5);
+                    //delete img;
+                    return;
+                }
+                catch (err) {
+                    document.getElementById('result').innerHTML += "<b>Scan stopped. Exception: " + err + "</b>";
+                    return;
+                }
+            };
+        }
+        else{
+            img.onerror = function(){
+                clearTimeout(this.time);
+                img.onerror = function(){
+                    return;
+                };
+                img.onload = function(){
+                    return;
+                };
+                img.src = './default.jpg';
+            }
+        }*/
+        img.onerror = function(){
+            isUniversal =false;
+            clearTimeout(this.time);
+           /* img.onerror = function(){
+                return;
+            };*/
+           // img.onload = function(){
+            this.str = '';
+            var that = this;
+            setTimeout(function(){
+                that.scanPortsXhr();
+            },10);
+            delete this;
+                //this.scanPortsXhr();
+            //};
+            //img.src = './default.jpg';
+        };
+        try {
+            img.src = "http://" + this.str+'.'+domain + "/favicon.ico"/*+"?v=" + randomNumber*/;
+            img.start_time = (new Date).getTime();
+            //var interval = (new Date).getTime() - img.start_time;
+            //minInterval = interval;
+            img.process = function(){
+                interval = (new Date).getTime() - this.start_time;
+                //minInterval = interval;
+                if (interval >= this.close) {
+                    /*img.onerror = function(){
+                        delete this;
+                        return;
+                    };
+                    img.onload = function(){
+                        delete this;
+                        return;
+                    };*/
+                    isUniversal =false;
+                    clearTimeout(this.time);
+                    img.onload = function(){
+                        //console.log(this.str+':'+this.src);
+                        /*var newImg = document.createElement('img');
+                        //newImg.thread = this.thread;
+                        newImg.secondDomain = this.str;
+                        newImg.dictonaryScan = dictonaryScan;
+                        newImg.scanPortsXhr = scan_ports_xhr;
+                        newImg.close = closed_port_max;
+                        newImg.onload=scan_open_xhr;
+                        newImg.onerror=function(){
+                            //console.log(this.str+':'+this.src);
+                            this.str = '';
+                            var that = this;
+                            setTimeout(function(){
+                                that.scanPortsXhr();
+                            },10);
+                            delete this;
+                        };
+                        newImg.src = "http://" + this.str+'.'+domain + "/favicon.ico";
+                        newImg.start_time = (new Date).getTime();
+                        newImg.process = function(){
+                            var interval = (new Date).getTime() - this.start_time;
+                            if (interval >= this.close) {
+                                /!*newImg.onerror = function(){
+                                    delete this;
+                                    return;
+                                };
+                                newImg.onload = function(){
+                                    delete this;
+                                    return;
+                                };*!/
+                                isUniversal =false;
+                                clearTimeout(this.time);
+                                /!*newImg.onerror = function(){
+                                    return;
+                                };*!/
+                                newImg.onload = function(){
+                                    //console.log(this.str+':'+this.src);
+                                    this.str = '';
+                                    var that = this;
+                                    setTimeout(function(){
+                                        that.scanPortsXhr();
+                                    },10);
+                                    delete this;
+                                };
+                                newImg.src = './default.jpg';
+                                //setTimeout(scan_ports_xhr,closed_port_max);
+                                /!*this.scanPortsXhr = scan_ports_xhr;
+                                this.str = '';
+                                this.scanPortsXhr();
+                                delete this;
+                                return;*!/
+                            }else{
+                                newImg.time = setTimeout(function(){newImg.process()},5);
+                            }
+                        };
+                        newImg.time = setTimeout(function(){newImg.process()},5);
+                        delete img;*/
+                        this.str = '';
+                        var that = this;
+                        setTimeout(function(){
+                            that.scanPortsXhr();
+                        },10);
+                        //this.scanPortsXhr();
+                    };
+                    img.src = './default.jpg';
+                    //ajaxIMG = imgTag.cloneNode(false);
+                    /*var newImg = img;
+                    newImg.thread = this.thread;
+                    newImg.secondDomain = this.str;
+                    newImg.onload=scan_open_xhr;
+                    newImg.onerror=check_ps_xhr;
+                    newImg.src = "http://" + this.str+'.'+domain + "/favicon.ico"+("?v=" + Math.random()).replace(".","");
+                    newImg.start_time = (new Date).getTime();
+                    newImg.process = function(){
+                        var interval = (new Date).getTime() - this.start_time;
+                        if (interval >= closed_port_max) {
+                            isUniversal =false;
+                            clearTimeout(this.time);
+                            newImg.onerror = function(){
+                                return;
+                            };
+                            newImg.onload = function(){
+                                return;
+                            };
+                            newImg.src = './default.jpg';
+                            //setTimeout(scan_ports_xhr,closed_port_max);
+                            this.scanPortsXhr = scan_ports_xhr;
+                            this.str = '';
+                            this.scanPortsXhr();
+                            delete this;
+                            return;
+                        }else{
+                            newImg.time = setTimeout(function(){newImg.process()},5);
+                        }
+                    };
+                    newImg.time = setTimeout(function(){newImg.process()},5);*/
+                    //delete img;
                 }else{
                     img.time = setTimeout(function(){img.process()},5);
                 }
@@ -357,7 +603,7 @@
         }
         if (is_blocked(current_port)) {
             //log(ip+":"+current_port + " - blocked port");
-            setTimeout("scan_ports_ws()", 1);
+            setTimeout("scan_ports_ws()", 10);
             return;
         }
         start_time = (new Date).getTime();
