@@ -20,7 +20,7 @@ var $ = {
                 path:options.path||"",
                 expires:new Date()*1+options.expires||"24*60*60*1000",
                 secure:options.secure||""
-            }
+            };
             if(isJSON(value)){
                 value = JSON.stringify(value);
             }
@@ -50,7 +50,7 @@ var $ = {
             return undefined;
         }
     }
-}
+};
 function isJSON(obj){
     var isjson = typeof(obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == "[object object]" && !obj.length;
     return isjson;
@@ -99,7 +99,7 @@ function ajax(option){
             }
             option.complete && option.complete(xhr);
         }
-    }
+    };
 
     function addHeader(obj){
         if(obj){
