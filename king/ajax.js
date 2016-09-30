@@ -109,3 +109,62 @@ function ajax(option){
         }
     }
 }
+
+/*
+* xhr.ajax({
+*       type: 'get' or 'post',
+*       data: {},
+*       url: 地址,
+*       dataType: json,
+*       header: {}
+*       success: function(res) {},
+*       error: function(xhr) {},
+*       complete: function(xhr) {}
+* })
+* */
+
+var xhr = {
+    formatParam: function (data){
+        var arr = [];
+        for(var name in data){
+            arr.push(encodeURIComponent(name) + "=" + encodeURIComponent(data[name]));
+        }
+        return arr.join('&');
+    },
+    ajax: function(option) {
+        var x = new XMLHttpRequest();
+        if(option.type.toLowerCase() == 'get') {
+            if(option.data) {
+                x.open('get', option.url + '?' + xhr.formatParam(option.data), true);
+            } else {
+                x.open('get', option.url, true);
+            }
+        } else if(option.type.toLowerCase() == 'post') {
+            x.open('post', option.url, true);
+            xhr.setHeader(x, {"Content-Type": "application/x-www-form-urlencoded"});
+            xhr.setHeader(x, option.header);
+            x.send(data);
+            x.onreadystatechange = function () {
+                if(x.readyState == 4) {
+                    if(x.status == 200) {
+                        var res;
+                        if(option.dataType && option.dataType.toLowerCase() == 'json') {
+                            res = JSON.parse(x.response);
+                        }
+                        option.success && option.success(x.response);
+                    } else {
+                        option.error && option.error(x);
+                    }
+                    option.complete && option.complete(x)
+                }
+            }
+        }
+    },
+    setHeader: function(x,obj) {
+        if(obj){
+            for(var name in obj){
+                x.setRequestHeader(name,obj[name]);
+            }
+        }
+    }
+};
