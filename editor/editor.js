@@ -14,6 +14,27 @@ var KEStatus = {
     emptyList:[],//用于去除上次操作产生的空节点
     status:{},//用于保存当前range选中的状态
     isKEMCDown:false,//焦点是否位于编辑区内
+    isEmptyNode: function(node) {//判断是否为空节点
+        if(!node) {
+            return false;
+        }
+        if(node.nodeType == 3 && (node.data == "​" || node.data == '')){
+            return true;
+        }
+        if(node.nodeType == 1) {
+            var arr = [];
+            if(!node.childNodes.length) {
+                return true;
+            }
+            for(var i = 0; i < node.childNodes.length; i++) {
+                if(!KEStatus.isEmptyNode(node.childNodes[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    },
     //恢复range
     setFocus:function(){
         kEMain.focus();
@@ -25,6 +46,7 @@ var KEStatus = {
     saveCusorPos:function(){
         KEStatus.selection = window.getSelection?window.getSelection():document.selection;
         KEStatus.range = KEStatus.selection.createRange?KEStatus.selection.createRange():KEStatus.selection.getRangeAt(0);
+        KEStatus.delEmptyList();
     },
     //选中range
     select:function(){
@@ -33,10 +55,25 @@ var KEStatus = {
     },
     //去除标签占位符
     delEmptyList:function(){
-        var l = [];
-        while(KEStatus.emptyList.length){
+        while(KEStatus.emptyList.length) {
             obj = KEStatus.emptyList.pop();
-            if(obj!=KEStatus.range.commonAncestorContainer){
+            if(obj.parentNode.parentNode) {
+                if(obj.length == 1) {
+                    obj.parentNode.parentNode.removeChild(obj.parentNode);
+                } else if (obj.length > 1) {
+                    var start = KEStatus.range.startOffset;
+                    var end = KEStatus.range.endOffset;
+                    obj.data = obj.data.substr(1);
+                    if(KEStatus.range.startContainer == obj) {
+                        KEStatus.range.setStart(obj, start-1);
+                    }
+                    if(KEStatus.range.endContainer == obj) {
+                        KEStatus.range.setEnd(obj, end-1);
+                    }
+                }
+                KEStatus.select();
+            }
+         /*   if(obj != KEStatus.range.commonAncestorContainer){
                 if(obj.childNodes&&obj.childNodes.length==1&&obj.childNodes[0].nodeType==3&&obj.childNodes[0].length==1){
                     obj.parentNode&&obj.parentNode.removeChild(obj);
                 }else if(obj.nodeType==3&&(obj.data=="​"||obj.data=='')){
@@ -51,7 +88,7 @@ var KEStatus = {
                         KEStatus.range.setEnd(KEStatus.range.endContainer,e-1);
                     }
                 }else if(obj.nodeType==3){
-                    var s = KEStatus.range.startOffset,e = KEStatus.range.endOffset;
+                    s = KEStatus.range.startOffset,e = KEStatus.range.endOffset;
                     obj.data = obj.data.replace("​",'');
                     if(s!=KEStatus.range.startOffset){
                         KEStatus.range.setStart(KEStatus.range.startContainer,s-1);
@@ -60,51 +97,51 @@ var KEStatus = {
                         KEStatus.range.setEnd(KEStatus.range.endContainer,e-1);
                     }
                 }
-            }
+            }*/
         }
-        KEStatus.emptyList = l;
-        KEStatus.select();
+        KEStatus.emptyList.length = 0;
     },
     //命令入口
-    execCommand:function(command){
+    execCommand:function(command, option){
         if(!KEStatus.range){
             kEMain.focus();
             KEStatus.saveCusorPos();
         }
         KEStatus.delEmptyList();
         KECommands['save']();
-        KECommands[command]();
+        KECommands[command](option);
+        KEStatus.select();
         KEStatus.initTools();
     },
     //去除子节点相同的节点
-    mergeChild:function(element,tagName,option){
-        var tags = element.getElementsByTagName(tagName),child,nodes = [];
-        for(var i=0;i<tags.length;i++){
+    mergeChild: function(element, tagName, option){
+        var tags = element.getElementsByTagName(tagName), child, nodes = [];
+        for(var i=0; i < tags.length; i++){
             nodes[i] = tags[i];
         }
         if(option){
-            for(var i=0;i<nodes.length;i++){
-                if(!KEStatus.compare(option,nodes[i])){
-                    nodes.splice(i,1);
+            for(i = 0; i < nodes.length; i++) {
+                if(!KEStatus.compare(option,nodes[i])) {
+                    nodes.splice(i, 1);
                     i--;
                 }
             }
         }
-        for(var i=0,j=nodes.length;i<j;i++){
-            while(child = nodes[i].firstChild){
-                nodes[i].parentNode.insertBefore(child,nodes[i]);
+        for(i = 0, j=nodes.length; i < j; i++) {//将相同节点的子节点一个一个移至父节点下，最后删除该节点
+            while(child = nodes[i].firstChild) {
+                nodes[i].parentNode.insertBefore(child, nodes[i]);
             }
             nodes[i].parentNode.removeChild(nodes[i]);
         }
     },
     //合并前后相同的节点
     mergeParent:function(element){
-        var prev = element.previousSibling,next = element.nextSibling,
-            i,child = element.firstChild,parent = element.parentNode;
+        var prev = element.previousSibling, next = element.nextSibling,
+            i, child = element.firstChild, parent = element.parentNode;
         merge(prev,1);
         merge(next,2);
-        function merge(ele,type){
-            while(ele&&ele.nodeType==3&&(ele.data==''||ele.data=="​")){
+        function merge(ele,type) {
+            /*while(ele&&ele.nodeType==3&&(ele.data==''||ele.data=="​")){
                 if(type==1){
                     ele = ele.previousSibling;
                     if(ele){
@@ -116,8 +153,8 @@ var KEStatus = {
                         ele.parentNode.removeChild(ele.previousSibling);
                     }
                 }
-            }
-            if(ele&&ele.nodeName==element.nodeName){
+            }*/
+            if(ele && ele.nodeName == element.nodeName) {
                 while(ele.childNodes.length){
                     if(type==1){
                         element.insertBefore(ele.childNodes[0],child);
@@ -143,13 +180,28 @@ var KEStatus = {
         }
         return b;
     },
-    //去除前后空白节点
-    mergeEmpty:function(b){
-        while(b.previousSibling&& b.previousSibling.nodeType==3&& (b.previousSibling.data=="​"||b.previousSibling.data=='')){
-            b.parentNode.removeChild(b.previousSibling)
+    //获取节点递归父节点的p节点
+    getFatherP: function(node) {
+        while(node.nodeName != 'P') {
+            node = node.parentNode;
+            if(node == kEMain) {
+                return;
+            }
         }
-        while(b.nextSibling&& b.nextSibling.nodeType==3&& (b.nextSibling.data=="​"||b.nextSibling.data=='')){
-            b.parentNode.removeChild(b.nextSibling);
+        return node;
+    },
+    //去除前后空白节点
+    mergeEmpty:function(b) {
+        mergeChild(b.previousSibling);
+        mergeChild(b.nextSibling);
+        function mergeChild(ele) {
+            if(KEStatus.isEmptyNode(ele)) {
+                ele.parentNode.removeChild(ele);
+            } else {
+                if(ele && ele.firstChild) {
+                    mergeChild(ele.firstChild);
+                }
+            }
         }
     },
     //初始化工具栏
@@ -176,7 +228,7 @@ var KEStatus = {
         }
         //判断选中多行-end
         //行高-start
-        var s = KEStatus.range.startContainer;
+        s = KEStatus.range.startContainer;
         var lhMap = {
             '1':0,'1.5':1,'1.75':2,'2':3,'3':4,'4':5,'5':6
         };
@@ -300,45 +352,109 @@ var KEStatus = {
         return outputValue;
     },
     paste:function(e){
-        var d = e.clipboardData.getData('text/html'),html;
-        if(d){
+        var html = e.clipboardData.getData('text/html');
+        if(html){
             KECommands.save();
+            //屏蔽值
             var styleSheet = {
-                color:'rgb(0, 0, 0)',
-                'font-family':'Simsun',
-                'font-size':'medium',
-                'font-style':'normal',
-                'font-variant-ligatures':'normal',
-                'font-variant-caps':'normal',
-                'font-weight':'normal',
-                'letter-spacing':'normal',
-                'line-height':'normal',
-                orphans:'2',
-                'text-align':'start',
-                'text-indent':'0px',
-                'text-transform':'none',
-                'white-space':'normal',
-                widows:'2',
-                'word-spacing':'0px',
-                '-webkit-text-stroke-width':'0px',
-                float:'none',
-                display:'inline'
+                'color': 'rgb(0, 0, 0)',
+                /*'font-family': 'Simsun',*/
+                'font-size': 'medium',
+                'font-style': 'normal',
+                'font-variant-ligatures': 'normal',
+                'font-variant-caps': 'normal',
+                'font-weight': 'normal',
+                'letter-spacing': 'normal',
+                'line-height': 'normal',
+                'orphans': '2',
+                'text-align': 'start',
+                'text-indent': '0px',
+                'text-transform': 'none',
+                'white-space': 'normal',
+                'widows': '2',
+                'word-spacing': '0px',
+                '-webkit-text-stroke-width': '0px',
+                'float': 'none',
+                'display': 'inline'
+            };
+            //屏蔽属性
+            var styleSheetKey = {
+                'font-family': true
             };
             e.preventDefault();
-            html = d;
             html = html.replace(/strong>/g,'b>');
             html = html.replace(/<em>/g,'i>');
             var span = document.createElement('span'),ele,flag=false;
             var a = html.match(/<!--StartFragment-->(.*)<!--EndFragment-->/);
-            var b = html.match(/<body>(.*)<\/body>/);
-            if(a&&a.length>1){
+            if(a && a.length) {
                 span.innerHTML = html.match(/<!--StartFragment-->(.*)<!--EndFragment-->/)[1];
-            }else if(b&& b.length>1){
-                span.innerHTML = html.match(/<body>(.*)<\/body>/)[1];
-            }else{
-                return;
+            } else {
+                var b = html.match(/<body>(.*)<\/body>/);
+                if(b && b.length) {
+                    span.innerHTML = html.match(/<body>(.*)<\/body>/)[1];
+                } else {
+                    return;
+                }
             }
-            var block = KEStatus.isBlock(span),range;
+            var block = KEStatus.isBlock(span.firstChild);//是否是块级
+            var range = KEStatus.range.cloneRange();
+            if(!range.collapsed) {
+                range.extractContents();
+            }
+            //var end = span.lastChild;
+            if(block) {
+                if(range.endContainer != kEMainContent) {
+                    range.setEndAfter(KEStatus.getFatherP(range.endContainer));
+                } else {
+                    range.setEndAfter(kEMainContent.childNodes[range.endOffset]);
+                }
+                var bottom = range.extractContents();
+                while(ele = span.lastChild) {
+                    var obj = document.createElement(ele.nodeName);
+                    obj.innerHTML = ele.innerHTML;
+                    if(!flag){
+                        flag = obj;
+                    }
+                    for(var key = 0;key < ele.style.length;key++){
+                        var t = ele.style[key], ts = ele.style[t];
+                        if(ts != styleSheet[t] && !styleSheetKey[t]){
+                            obj.style[t] = ts;
+                        }
+                    }
+                    span.removeChild(ele);
+                    ele = span.lastChild;
+                    range.insertNode(obj);
+                }
+                var collrange = range.cloneRange();
+                collrange.collapse(false);
+                collrange.insertNode(bottom);
+            } else {
+                while(ele = span.lastChild) {
+                    obj = document.createElement(ele.nodeName);
+                    obj.innerHTML = ele.innerHTML;
+                    if(!flag){
+                        flag = obj;
+                    }
+                    for(key=0;key<ele.style.length;key++){
+                        t = ele.style[key];
+                        ts = ele.style[t];
+                        if(ts != styleSheet[t] && !styleSheetKey[t]){
+                            obj.style[t] = ts;
+                        }
+                    }
+                    span.removeChild(ele);
+                    ele = span.lastChild;
+                    range.insertNode(obj);
+                }
+            }
+            KEStatus.mergeEmpty(flag);
+            KEStatus.mergeEmpty(obj);
+            var node = KEStatus.getRangeEndContainer(flag);
+            range.setEnd(node, node.length);
+            range.setStart(KEStatus.getRangeStartContainer(obj), 0);
+            KEStatus.range = range;
+            KEStatus.select();
+            /*var block = KEStatus.isBlock(span),range;
             while(ele = span.lastChild){
                 var obj = document.createElement(ele.nodeName);
                 obj.innerHTML = ele.innerHTML;
@@ -373,7 +489,7 @@ var KEStatus = {
             obj = KEStatus.getRangeEndContainer(flag);
             KEStatus.range.setEnd(obj,obj.length);
             KEStatus.range.collapse(false);
-            KEStatus.select();
+            KEStatus.select();*/
         }else{
             KEStatus.pastePlain(e);
         }
@@ -403,41 +519,46 @@ var KEStatus = {
         }
     },
     isBlock:function(element) {
-        var child = element.firstChild;
-        while(child){
-            if (child.style.display == 'block') {
-                return true;
-            }
-            child = child.nextSibling;
-        }
-        return false;
+        return (element.style.display == 'block' || (element.style.display == '' && element.nodeName == 'P'));
     }
 };
 var KECommands = {
-    execCommandTag:function(status,nodeName,option){
+    execCommandTag: function(status, nodeName, option) {
         var b,obj,ec,range,length;
-        if(!KEStatus.isMultiLine){
-            if(!KEStatus.status[status].status){
+        if(!KEStatus.isMultiLine) {//单行操作
+            if(!KEStatus.status[status].status) {//添加效果
                 b = tag(nodeName,option);
-                if(KEStatus.range.collapsed){
+                if(KEStatus.range.collapsed) {//选中为空
                     KEStatus.range.insertNode(b);
                     b.innerHTML = '&#8203;';
-                    KEStatus.emptyList.push(b);
-                    KEStatus.range.setEnd(b, 1);
+                    KEStatus.emptyList.push(b.firstChild);
+                    KEStatus.range.setEnd(b.firstChild,1);
                     KEStatus.range.collapse(false);
-                    KEStatus.select();
-                }else{
-                    b.appendChild(KEStatus.range.extractContents());
-                    KEStatus.mergeChild(b,nodeName,option);
-                    KEStatus.range.insertNode(b);
-                    KEStatus.mergeEmpty(b);
-                    KEStatus.range.setStart(KEStatus.getRangeStartContainer(b), 0);
+                    //KEStatus.select();
+                } else {
+                    /*
+                    * <p>abc<i>【abc】</i>abc</p>单个标签首尾
+                    * <p>abc<i>【ab】c</i>abc</p>单个标签首中
+                    * <p>abc<i>a【bc】</i>abc</p>单个标签中尾
+                    * <p>abc<i>a【b】c</i>abc</p>单个标签中中
+                    * <p>【abc<i>a】bc</i>abc</p>多标签首中
+                    * <p>【abc<i>abc】</i>abc</p>多标签首尾
+                    * <p>a【bc<i>a】bc</i>abc</p>多标签中中
+                    * <p>a【bc<i>abc】</i>abc</p>多标签中尾
+                    * <p>abc<i>abc</i>abc</p>
+                    * 单行加粗测试没问题
+                    * */
+                    b.appendChild(KEStatus.range.extractContents());//将选中内容取出并添加到标签中
+                    KEStatus.mergeChild(b, nodeName, option);//选中的标签内可能有和外加标签相同，需要去除子节点相同标签
+                    KEStatus.range.insertNode(b);//将处理好的标签插入文本
+                    KEStatus.mergeEmpty(b);//移除因为取出产生的空白标签或文本
+                    KEStatus.range.setStart(KEStatus.getRangeStartContainer(b), 0);//恢复选中状态
                     obj = KEStatus.getRangeEndContainer(b);
                     KEStatus.range.setEnd(obj,obj.length);
-                    KEStatus.select();
-                    KEStatus.mergeParent(b);
+                    //KEStatus.select();//选中
+                    KEStatus.mergeParent(b);//若兄弟节点属同类标签将其合并
                 }
-            }else{
+            } else{
                 var node = KEStatus.status[status].node;
                 //截取前半部分-start
                 range = KEStatus.range.cloneRange();
@@ -512,7 +633,7 @@ var KECommands = {
                         node.parentNode.removeChild(node.previousSibling);
                     }
                     KEStatus.range.collapse(false);
-                    KEStatus.select();
+                    //KEStatus.select();
                 }else{
                     ec = range.extractContents();
                     b = tag(nodeName,option);
@@ -532,7 +653,7 @@ var KECommands = {
                     KEStatus.range.setStart(KEStatus.getRangeStartContainer(obj),0);
                     obj = KEStatus.getRangeEndContainer(node.previousSibling);
                     KEStatus.range.setEnd(obj,obj.length);
-                    KEStatus.select();
+                    //KEStatus.select();
                 }
                 //截取中间部分-end
                 while(node.childNodes.length&&node.firstChild.nodeType==3&&(node.firstChild.data=="​"||node.firstChild.data=='')){
@@ -542,15 +663,15 @@ var KECommands = {
                     node.parentNode.removeChild(node);
                 }
             }
-        }else{
+        } else {
             var s = KEStatus.isMultiLine.start,e = KEStatus.isMultiLine.end;
             if(!KEStatus.status[status].status){
                 while(true){
                     var rg = KEStatus.range.cloneRange();
-                    if(s!=KEStatus.isMultiLine.start){
+                    if(s != KEStatus.isMultiLine.start){
                         rg.setStart(s,0);
                     }
-                    if(s!=e){
+                    if(s !=e ){
                         rg.setEndAfter(s.lastChild);
                         b = tag(nodeName,option);
                         b.appendChild(rg.extractContents());
@@ -572,10 +693,10 @@ var KECommands = {
                     }
                     s = s.nextSibling;
                 }
-                KEStatus.select();
+                //KEStatus.select();
             }else{
                 while(true){
-                    var rg = KEStatus.range.cloneRange();
+                    rg = KEStatus.range.cloneRange();
                     if(s==KEStatus.isMultiLine.start){
                         rg.setEndAfter(s);
                         b = rg.extractContents();
@@ -612,7 +733,7 @@ var KECommands = {
                         b = KEStatus.getRangeEndContainer(obj);
                         KEStatus.range.setEnd(b, b.length);
                         KEStatus.mergeEmpty(obj);
-                        KEStatus.select();
+                        //KEStatus.select();
                         break;
                     }
                     s = s.nextSibling;
@@ -627,29 +748,64 @@ var KECommands = {
             return ele;
         }
     },
-    Bold:function(){
-        KECommands.execCommandTag('isBold','b');
+    execCommandBlock: function(option) {
+        if(!KEStatus.isMultiLine) {
+            var node = KEStatus.range.startContainer;
+            while(node.nodeName != 'P') {
+                node = node.parentNode;
+            }
+            KEStatus.updateObject(option,node);
+           /* for(var key in option) {
+                for(var name in option[key]) {
+                    node[key][name] = option[key][name];
+                }
+            }*/
+        } else {
+            var s = KEStatus.isMultiLine.start,e = KEStatus.isMultiLine.end;
+            while(s != e) {
+                /*for(key in option) {
+                    for(name in option[key]) {
+                        s[key][name] = option[key][name];
+                    }
+                }*/
+                KEStatus.updateObject(option,s);
+                s = s.nextSibling;
+            }
+            /*for(key in option) {
+                for(name in option[key]) {
+                    s[key][name] = option[key][name];
+                }
+            }*/
+            KEStatus.updateObject(option,s);
+        }
+        //KEStatus.select();
     },
-    Italic:function(){
+    Bold: function() {
+        KECommands.execCommandTag('isBold', 'b');
+    },
+    Italic: function() {
         KECommands.execCommandTag('isItalic','i');
     },
-    Underline:function(){
+    Underline: function() {
         KECommands.execCommandTag('isUnderline','u');
     },
-    Border:function(){
-        KECommands.execCommandTag('isBorder','span',{style:{border:'1px solid rgb(0, 0, 0)'}});
+    Border: function() {
+        KECommands.execCommandTag('isBorder','span',{style:{border: '1px solid rgb(0, 0, 0)'}});
     },
-    save:function(){
+    LineHeight: function(em) {
+        KECommands.execCommandBlock({style:{'line-height': em + 'em'}});
+    },
+    save: function(){
         KEStatus.redoList = [];
         KEStatus.saveWork(KEStatus.list);
     },
-    undo:function(){
+    undo: function(){
         if(KEStatus.list.length){
             KEStatus.saveWork(KEStatus.redoList);
             KEStatus.setWork(KEStatus.list);
         }
     },
-    redo:function(){
+    redo: function(){
         if(KEStatus.redoList.length){
             KEStatus.saveWork(KEStatus.list);
             KEStatus.setWork(KEStatus.redoList);
@@ -721,7 +877,7 @@ kETools.onclick = function(e){
             KEStatus.execCommand( 'Border');
             break;
         case 'kETool_LHL':
-            KEStatus.execCommand( 'LineHeight');
+            KEStatus.execCommand( 'LineHeight', KEObject.kETool_LHDown.getElementsByClassName('on')[0].innerText);
             break;
         case 'kETool_p':
             if(!KEStatus.range){
@@ -738,7 +894,7 @@ kETools.onclick = function(e){
                 }
             } else{
                 kETool_p.className = 'kETool_btn kETool_bg checked';
-                kEMain.onpaste = KEStatus.pastePlain(e);
+                kEMain.onpaste = KEStatus.pastePlain;
             }
             break;
     }
@@ -766,8 +922,8 @@ kETool_img.addEventListener('change',function(){
     KEStatus.range.insertNode(img);
     KEStatus.range.setStartAfter(img);
     KEStatus.range.setEndAfter(img);
-    var st = KEStatus.selection;
-    var r = KEStatus.range;
+    st = KEStatus.selection;
+    r = KEStatus.range;
     //document.execCommand("inserthtml",'<img src=\"\" id=\"load\"/>');
     //KEStatus.saveCusorPos();
     //me.execCommand('inserthtml', '<img class="loadingclass" id="' + loadingId + '" src="' + me.options.themePath + me.options.theme +'/images/spacer.gif" title="' + (me.getLang('simpleupload.loading') || '') + '" >');
@@ -885,6 +1041,6 @@ KEObject.kETool_LHDown.addEventListener('click',function(e){
         tar.className = 'option on';
         this.className = 'kETool_LHDown';
         var em = tar.innerText;
-        KEStatus.setLineHeight(em);
+        KEStatus.execCommand('LineHeight', em);
     }
 });
