@@ -415,7 +415,7 @@ var KEStatus = {
                     if(!flag){
                         flag = obj;
                     }
-                    for(var key = 0;key < ele.style.length;key++){
+                    for(var key = 0; key < ele.style.length; key++){
                         var t = ele.style[key], ts = ele.style[t];
                         if(ts != styleSheet[t] && !styleSheetKey[t]){
                             obj.style[t] = ts;
@@ -837,10 +837,11 @@ kEMain.onblur = function(){
 //内容为空无法删除-start
 kEMain.addEventListener('keydown',function(e){
     if(e.keyCode==8){
-        if(kEMainContent.childNodes[0].innerHTML=='<br>'){
+        if(kEMainContent.childNodes[0].innerHTML=='<br>' && kEMainContent.childNodes.length < 3){
             e.preventDefault();
             e.stopPropagation();
         }
+//内容为空无法删除-end
     }else if(e.keyCode==90){
         event.preventDefault();
         KECommands['undo']();
@@ -851,7 +852,6 @@ kEMain.addEventListener('keydown',function(e){
         KECommands['copy']();
     }*/
 });
-//内容为空无法删除-end
 kEMain.onpaste = function(e){
     KEStatus.paste(e);
 };
@@ -918,16 +918,47 @@ kETool_img.addEventListener('change',function(){
         KEStatus.range = r;
         KEStatus.setFocus();
     };
-    img.setAttribute('id','image');
+    //img.setAttribute('id','image');
     KEStatus.range.insertNode(img);
     KEStatus.range.setStartAfter(img);
     KEStatus.range.setEndAfter(img);
     st = KEStatus.selection;
     r = KEStatus.range;
+    var form = new FormData();
+    form.append("file", document.getElementById('kETool_img').files[0]);
+    var xhr = new XMLHttpRequest();
+    xhr.open('post', '/upload', true);
+    xhr.send(form);
+    xhr.onreadystatechange = function () {
+        if(xhr.readyState == 4) {
+            if(xhr.status == 200) {
+                var res = JSON.parse(xhr.response);
+                img.src = res.url;
+                img.onclick = function(){
+                    KEStatus.range.selectNode(img);
+                    KEStatus.modifyImg = img;
+                    KEStatus.setFocus();
+                    modifyImg.removeEventListener('click',s);
+                    focusImg.removeEventListener('click',n);
+                    modifyImg.style.left = img.offsetLeft+'px';
+                    modifyImg.style.top = (img.offsetTop-kEMainContent.scrollTop)+'px';
+                    modifyImg.style.width = img.clientWidth+'px';
+                    modifyImg.style.height = img.clientHeight+'px';
+                    focusImg.style.display = 'block';
+                    modifyImg.addEventListener('click',s);
+                    focusImg.addEventListener('click',n);
+                };
+                console.log(res.url);
+            } else {
+                console.log(0);
+                img.parentNode.removeChild(img);
+            }
+        }
+    };
     //document.execCommand("inserthtml",'<img src=\"\" id=\"load\"/>');
     //KEStatus.saveCusorPos();
     //me.execCommand('inserthtml', '<img class="loadingclass" id="' + loadingId + '" src="' + me.options.themePath + me.options.theme +'/images/spacer.gif" title="' + (me.getLang('simpleupload.loading') || '') + '" >');
-    if(typeof FileReader != 'undefined'){
+   /* if(typeof FileReader != 'undefined'){
         var acceptedTypes = {
             'image/png':true,
             'image/jpeg':true,
@@ -956,7 +987,7 @@ kETool_img.addEventListener('change',function(){
             };
             reader.readAsDataURL(document.getElementById('kETool_img').files[0]);
         }
-    }
+    }*/
 });
 modifyImg.addEventListener('mousedown',function(e){
     KEStatus.isImgDown = true;

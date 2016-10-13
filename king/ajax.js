@@ -143,20 +143,20 @@ var xhr = {
             x.open('post', option.url, true);
             xhr.setHeader(x, {"Content-Type": "application/x-www-form-urlencoded"});
             xhr.setHeader(x, option.header);
-            x.send(data);
-            x.onreadystatechange = function () {
-                if(x.readyState == 4) {
-                    if(x.status == 200) {
-                        var res;
-                        if(option.dataType && option.dataType.toLowerCase() == 'json') {
-                            res = JSON.parse(x.response);
-                        }
-                        option.success && option.success(x.response);
-                    } else {
-                        option.error && option.error(x);
+            x.send(xhr.formatParam(option.data));
+        }
+        x.onreadystatechange = function () {
+            if(x.readyState == 4) {
+                if(x.status == 200) {
+                    var res;
+                    if(option.dataType && option.dataType.toLowerCase() == 'json') {
+                        res = JSON.parse(x.response);
                     }
-                    option.complete && option.complete(x)
+                    option.success && option.success(x.response);
+                } else {
+                    option.error && option.error(x);
                 }
+                option.complete && option.complete(x)
             }
         }
     },
