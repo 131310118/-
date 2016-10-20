@@ -36,8 +36,8 @@ var $ = {
                 element.style.display = 'none';
             }
         },25);
-    },
-}
+    }
+};
 var tips = (function(){
     var out = tag('div','tipspop');
     out.style.display = 'none';
@@ -46,11 +46,13 @@ var tips = (function(){
     var op = out.append('div','tc mt10');
     var close = function(){
         $.fadeOut(out,200);
-    }
+    };
     var show = function(option){
         document.body.appendChild(out);
         if(!option){
-            var option = {};
+            var option = {
+                callback:{}
+            };
         }
         var config = {
             img:option.img||'<span class="mr5"></span>',
@@ -86,7 +88,7 @@ var tips = (function(){
                 op.removeChild(out.confirm);
                 out.confirm = false;
             }
-        };
+        }
         if(config.cancel){
             if(config.cancel){
                 if(!out.cancel){
@@ -106,7 +108,7 @@ var tips = (function(){
                 op.removeChild(out.cancel);
                 out.cancel = false;
             }
-        };
+        }
         if(config.autoHide){
             setTimeout(tips.close,2000);
         }
@@ -133,7 +135,7 @@ function tag(tagName,props){
     }
     Tag.append = function (tagName, props) {
         return Tag.appendChild(tag(tagName, props));
-    }
+    };
     return Tag;
 }
 function updateObject(inputValue,outputValue){
