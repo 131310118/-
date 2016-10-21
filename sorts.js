@@ -1,5 +1,5 @@
-//ð���㷨
 var sorts = {
+	//冒泡算法
 	bubbleSort:function(arr){
 		for(var i=arr.length-1;i>0;i--){
 			for(var j=0;j<i;j++){
@@ -12,6 +12,7 @@ var sorts = {
 		}
 		return arr;
 	},
+	//选择排序
 	selectionSort:function(arr){
 		for(var i=0;i<arr.length-1;i++){
 			var min = i;
@@ -26,6 +27,7 @@ var sorts = {
 		}
 		return arr;
 	},
+	//插入排序
 	insertSort:function(arr){
 		for(var i=1;i<arr.length-1;i++){
 			var min = arr[i];
@@ -39,6 +41,7 @@ var sorts = {
 		}
 		return arr;
 	},
+	//希尔排序
 	shellSort:function(arr,gaps){
 		for(var j=0;j<gaps.length;j++){
 			for(var i=gaps[j];i<arr.length-1;i++){
@@ -54,6 +57,7 @@ var sorts = {
 		}
 		return arr;
 	},
+	//归并排序
 	mergeSort:function(arr){
 		var step = 1;
 		left = 0;
@@ -134,5 +138,54 @@ var sorts = {
 			right = left+step;
 		}
 		return arr;
+	},
+	//堆排序
+	//sortby: 1大堆， 0小堆
+	heapsort: function(arr, sortby) {
+		var result = [];
+		var sort = function(arr) {
+			for(var i = Math.floor(arr.length/2) - 1; i >= 0; i--) {
+				if(sortby) {
+					var max = arr[i];
+					var index = i;
+					if(max < arr[i * 2 + 1]) {
+						max = arr[i * 2 + 1];
+						index = i * 2 + 1;
+					}
+					if(max < arr[i * 2 + 2]) {
+						max = arr[i * 2 + 2];
+						index = i * 2 + 2;
+					}
+					if(index != i) {
+						var temp = arr[index];
+						arr[index] = arr[i];
+						arr[i] = temp;
+					}
+				} else {
+					var min = arr[i];
+					var index = i;
+					if(min > arr[i * 2 + 1]) {
+						min = arr[i * 2 + 1];
+						index = i * 2 + 1;
+					}
+					if(min > arr[i * 2 + 2]) {
+						min = arr[i * 2 + 2];
+						index = i * 2 + 2;
+					}
+					if(index != i) {
+						var temp = arr[index];
+						arr[index] = arr[i];
+						arr[i] = temp;
+					}
+				}
+			}
+		}
+		while(arr.length) {
+			sort(arr);
+			result.push(arr[0]);
+			arr[0] = arr[arr.length-1];
+			arr.length = arr.length - 1;
+		}
+		return result;
 	}
 }
