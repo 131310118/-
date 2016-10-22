@@ -58,88 +58,83 @@ var sorts = {
 		return arr;
 	},
 	//归并排序
-	mergeSort:function(arr){
+	mergeSort:function arrsort(tree, fun) {
 		var step = 1;
-		left = 0;
-		right = 1;
-		while(step<arr.length){
-			while(right+step<=arr.length){
-				var leftA = [];
-				var rightA = [];
-				var centerA = [];
-				for(var i=0;i<step;i++){
-					leftA.push(arr[left+i]);
-				}
-				for(var i=0;i<step;i++){
-					rightA.push(arr[right+i]);
-				}
-				while(leftA.length||rightA.length){
-					if(leftA.length&&rightA.length){
-						if(leftA[0]<rightA[0]){
-							centerA.push(leftA.shift());
-						}else{
-							centerA.push(rightA.shift());
-						}
-					}else if(leftA.length){
-						while(leftA.length){
-							centerA.push(leftA.shift());
-						}
-					}else{
-						while(rightA.length){
-							centerA.push(rightA.shift());
-						}
-					}
-				}
-				for(var i=0;i<step;i++){
-					arr[left+i] = centerA[i];
-				}
-				for(var i=0;i<step;i++){
-					arr[right+i] = centerA[step+i];
-				}
-				left = right+step;
-				right = left+step;
-			}
-			if(right<arr.length){
-				var leftA = [];
-				var rightA = [];
-				var centerA = [];
-				for(var i=0;i<step;i++){
-					leftA.push(arr[left+i]);
-				}
-				for(var i=0;i<arr.length-right;i++){
-					rightA.push(arr[right+i]);
-				}
-				while(leftA.length||rightA.length){
-					if(leftA.length&&rightA.length){
-						if(leftA[0]<rightA[0]){
-							centerA.push(leftA.shift());
-						}else{
-							centerA.push(rightA.shift());
-						}
-					}else if(leftA.length){
-						while(leftA.length){
-							centerA.push(leftA.shift());
-						}
-					}else{
-						while(rightA.length){
-							centerA.push(rightA.shift());
-						}
-					}
-				}
-				for(var i=0;i<step;i++){
-					arr[left+i] = centerA[i];
-				}
-				for(var i=0;i<arr.length-right;i++){
-					arr[right+i] = centerA[step+i];
-				}
-			}
-			step*=2;
-			left = 0;
-			right = left+step;
+		var left = 0;
+		var right = 1;
+		var i = 0;
+		var conpare = function (a, b) {return a > b;}
+		if(fun) {
+			compare = fun;
 		}
-		return arr;
+		while(step < tree.length) {
+			while(right + step <= tree.length) {
+				var leftA = [];
+				var rightA = [];
+				var j = 0;
+				for(i = 0; i < step; i++) {
+					leftA.push(tree[left + i]);
+				}
+				for(i = 0; i < step; i++) {
+					rightA.push(tree[right + i]);
+				}
+				while(leftA.length || rightA.length) {
+					if(leftA.length && rightA.length) {
+						if(compare(leftA[0], rightA[0])) {
+							tree[left + j] = leftA.shift();
+						} else {
+							tree[left + j] = rightA.shift();
+						}
+					} else if(leftA.length) {
+						while(leftA.length) {
+							tree[left + j] = leftA.shift();
+						}
+					} else {
+						while(rightA.length) {
+							tree[left + j] = rightA.shift();
+						}
+					}
+					j++;
+				}
+				left = right + step;
+				right = left + step;
+			}
+			if(right < tree.length) {
+				var leftA = [];
+				var rightA = [];
+				var j = 0;
+				for(i = 0; i < step; i++) {
+					leftA.push(tree[left + i]);
+				}
+				for(i = 0; i < tree.length-right; i++) {
+					rightA.push(tree[right + i]);
+				}
+				while(leftA.length || rightA.length) {
+					if(leftA.length && rightA.length) {
+						if(compare(leftA[0], rightA[0])) {
+							tree[left + j] = leftA.shift();
+						} else {
+							tree[left + j] = rightA.shift();
+						}
+					} else if(leftA.length) {
+						while(leftA.length) {
+							tree[left + j] = leftA.shift();
+						}
+					} else {
+						while(rightA.length) {
+							tree[left + j] = rightA.shift();
+						}
+					}
+					j++;
+				}
+			}
+			step *= 2;
+			left = 0;
+			right = left + step;
+		}
+		return tree;
 	},
-	//堆排序
+//堆排序
 	//sortby: 1大堆， 0小堆
 	heapsort: function(arr, sortby) {
 		var result = [];
