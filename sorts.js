@@ -58,12 +58,12 @@ var sorts = {
 		return arr;
 	},
 	//归并排序
-	mergeSort:function arrsort(tree, fun) {
+	mergeSort:function(tree, fun) {
 		var step = 1;
 		var left = 0;
 		var right = 1;
 		var i = 0;
-		var conpare = function (a, b) {return a > b;}
+		var compare = function (a, b) {return a > b;}
 		if(fun) {
 			compare = fun;
 		}
@@ -85,16 +85,18 @@ var sorts = {
 						} else {
 							tree[left + j] = rightA.shift();
 						}
+						j++;
 					} else if(leftA.length) {
 						while(leftA.length) {
 							tree[left + j] = leftA.shift();
+							j++;
 						}
 					} else {
 						while(rightA.length) {
 							tree[left + j] = rightA.shift();
+							j++;
 						}
 					}
-					j++;
 				}
 				left = right + step;
 				right = left + step;
@@ -116,16 +118,18 @@ var sorts = {
 						} else {
 							tree[left + j] = rightA.shift();
 						}
+						j++;
 					} else if(leftA.length) {
 						while(leftA.length) {
 							tree[left + j] = leftA.shift();
+							j++;
 						}
 					} else {
 						while(rightA.length) {
 							tree[left + j] = rightA.shift();
+							j++;
 						}
 					}
-					j++;
 				}
 			}
 			step *= 2;
