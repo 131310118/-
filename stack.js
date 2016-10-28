@@ -1,3 +1,4 @@
+/*栈*/
 function Stack(){
     var dataStore = [];
     var top = 0;

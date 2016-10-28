@@ -1,3 +1,6 @@
+/*
+* å›¾
+* */
 function Graph(){
 	function line(s,weight,point){
 		this.start = s;
@@ -16,7 +19,7 @@ function Graph(){
 			this.points[end] = new point();
 		}
 		this.points[start].lines.push(new line(start,weight,end));
-	}
+	};
 	this.showMap = function(){
 		var str = '';
 		for(var p in this.points){
@@ -29,8 +32,8 @@ function Graph(){
 			}
 		}
 		console.log(str);
-	}
-	//Éî¶ÈÓÅÏÈËÑË÷
+	};
+	//æ·±åº¦ä¼˜å…ˆæœç´¢
 	this.dfs = function(point){
 		var mark = [];
 		var that = this;
@@ -44,10 +47,10 @@ function Graph(){
 			}else{
 				return;
 			}
-		}
+		};
 		dfs(point);
-	}
-	//¹ã¶ÈÓÅÏÈ
+	};
+	//å¹¿åº¦ä¼˜å…ˆ
 	this.bfs = function(point){
 		var mark = [];
 		var que = [point];
@@ -61,7 +64,7 @@ function Graph(){
 				}
 			}
 		}
-	}
+	};
 	//Dijkstra
 	//var s = new Graph();s.addLine('a','b',7);s.addLine('a','c',9);s.addLine('a','d',14);s.addLine('b','c',10);
 //s.addLine('b','e',15);s.addLine('c','d',2);s.addLine('d','f',9);s.addLine('e','f',6);
@@ -106,13 +109,13 @@ function Graph(){
 			reversePsth.push(path[end]);
 			end = path[end];
 		}
-		for(var i=reversePsth.length-1;i>=0;i--){
+		for(i=reversePsth.length-1;i>=0;i--){
 			str+=reversePsth[i]+'->';
 		}
 		str+='='+min[reversePsth[0]];
 		return str;
-	}
-	//ÍØÆË
+	};
+	//æ‹“æ‰‘
 	this.topSort = function(){
 		var indegree = [];
 		var start = [];
@@ -128,7 +131,7 @@ function Graph(){
 				}
 			}
 		}
-		for(var p in this.points){
+		for(p in this.points){
 			if(!indegree[p]){
 				start.push(p);
 			}

@@ -1,4 +1,4 @@
-/*
+/*列表
  * find(element)
  * toString()
  * insert(before,isAll,element,...)
@@ -13,7 +13,7 @@
 function List(){
     var listSize = 0;//列表元素个数
     var pos = 0;//当前位置
-    var dataStore = []//初始化一个空数组来保存列表元素
+    var dataStore = [];//初始化一个空数组来保存列表元素
     this.clear = clear;//清空列表
     this.find = find;//查找列表项
     this.toString = toString;//返回列表所有项

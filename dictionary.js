@@ -1,3 +1,4 @@
+/*字典*/
 var dictionary = {
 	dataStore:[],
 	add:function (key,value){

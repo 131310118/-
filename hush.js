@@ -1,3 +1,4 @@
+/*哈希表*/
 function hushTable(){
 	var dataStore = [];
 	var H = 31;

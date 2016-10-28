@@ -132,7 +132,7 @@ tree.prototype.setNode = function(obj){
     return this;
 }
 tree.prototype.insert = function(node,children){
-    var n = this.find(node)
+    var n = this.find(node);
     if(n){
         var l = n.length;
         while(n.children[l]){
@@ -375,20 +375,45 @@ tree.prototype.preorder = function(){//遍历
     }
 }
 tree.prototype.find = function(node){//查找指定节点
-    if(this.data==node){
-        return this;
-    }
-    else{
-        if(!this.isEmpty()){
-            for(var i in this.children){
-                var t = this.children[i].find(node);
-                if(t){
-                    return t;
+    if(node instanceof Array) {
+        if(node.length > 0) {
+            if(this.data == node[0]) {
+                node.shift();
+                if(node.length ==0 ) {
+                    return this;
+                } else {
+                    return this.find(node);
+                }
+            } else {
+                if(!this.isEmpty()){
+                    for(var i in this.children){
+                        var t = this.children[i].find(node);
+                        if(t){
+                            return t;
+                        }
+                    }
+                }
+                else{
+                    return false;
                 }
             }
         }
+    } else {
+        if(this.data==node){
+            return this;
+        }
         else{
-            return false;
+            if(!this.isEmpty()){
+                for(i in this.children){
+                    t = this.children[i].find(node);
+                    if(t){
+                        return t;
+                    }
+                }
+            }
+            else{
+                return false;
+            }
         }
     }
 }

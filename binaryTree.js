@@ -1,4 +1,8 @@
-function binaryTree(data){
+/*二叉树
+* fun:比较函数（可选）
+* fun(a, b),a和b为节点的data数据
+* */
+function binaryTree(data, fun){
 	function Node(data,left,right){
 		this.data = data||null;
 		this.left = left||null;
@@ -6,13 +10,16 @@ function binaryTree(data){
 		this.count = 1;
 	}
 	this.root = new Node(data);
+    this.fun = fun || function(a, b) {
+            return a < b;
+        };
 	this.insert = function(data){
 		if(!this.root.data){
 			this.root.data = data;
 		}else{
 			var r = this.root;
 			while(true){
-				if(r.data<data){
+				if(fun(r.data, data)){
 					var newNode = new Node(data);
 					if(r.right==null){
 						r.right = newNode;
@@ -21,7 +28,7 @@ function binaryTree(data){
 						r = r.right;
 					}
 				}else if(r.data>data){
-					var newNode = new Node(data);
+					newNode = new Node(data);
 					if(r.left==null){
 						r.left = newNode;
 						return true;
@@ -34,7 +41,7 @@ function binaryTree(data){
 				}
 			}
 		}
-	}
+	};
 	this.inorder = function(){
 		var r = this.root;
 		var order = function(r){
@@ -47,9 +54,9 @@ function binaryTree(data){
 			if(r.right){
 				order(r.right);
 			}
-		}
+		};
 		order(r);
-	}
+	};
 	this.preorder = function(){
 		var r = this.root;
 		var order = function(r){
@@ -62,9 +69,9 @@ function binaryTree(data){
 			if(r.right){
 				order(r.right);
 			}
-		}
+		};
 		order(r);
-	}
+	};
 	this.postorder = function(){
 		var r = this.root;
 		var order = function(r){
@@ -77,9 +84,9 @@ function binaryTree(data){
 			if(r.data){
 				console.log(r.data);
 			}
-		}
+		};
 		order(r);
-	}
+	};
 	this.getMin = function(n){
 		var r = this.root;
 		if(n){
@@ -89,7 +96,7 @@ function binaryTree(data){
 			r = r.left;
 		}
 		console.log(r.data);
-	}
+	};
 	this.getMax = function(n){
 		var r = this.root;
 		if(n){
@@ -99,7 +106,7 @@ function binaryTree(data){
 			r = r.right;
 		}
 		console.log(r.data);
-	}
+	};
 	this.find = function(data,n){
 		var r = this.root;
 		if(n){
@@ -115,9 +122,9 @@ function binaryTree(data){
 			}
 		}
 		return false;
-	}
+	};
 	this.remove = function(data,n){
-		var n = this.find(data,n);
+		n = this.find(data,n);
 		if(n.left){
 			var r = n.left;
 			while(r.right!=null){
@@ -126,7 +133,7 @@ function binaryTree(data){
 			n.data = r.data;
 			this.remove(data,r);
 		}else if(n.right){
-			var r = n.right;
+			r = n.right;
 			while(r.left!=null){
 				r = r.left;
 			}

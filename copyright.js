@@ -1,3 +1,4 @@
+//拷贝加版权
 function setClipboardText(event){
     event.preventDefault();
     var node = document.createElement('div');
@@ -21,7 +22,7 @@ function setClipboardText(event){
     else if(window.clipboardData){
         return window.clipboardData.setData("text", textData);
     }
-};
+}
 var answer = document.getElementById("answer");
 answer.addEventListener('copy',function(e){
     setClipboardText(e);

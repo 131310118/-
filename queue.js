@@ -1,3 +1,6 @@
+/*
+* 闃熷垪
+* */
 function Queue(){
 	var dataStore = [];
 	return {
@@ -15,11 +18,11 @@ function Queue(){
 		},
 		toString:function(){
 			/* var str = '';
-			for(var i=0;i<dataStore.length-1;i++){
-				str+=dataStore[i]+',';
-			}
-			str+=dataStore[length];
-			return str; */
+			 for(var i=0;i<dataStore.length-1;i++){
+			 str+=dataStore[i]+',';
+			 }
+			 str+=dataStore[length];
+			 return str; */
 			return dataStore.toString();
 		},
 		empty:function(){
@@ -34,7 +37,7 @@ function Queue(){
 	}
 }
 
-//优先队列
+//浼樺厛闃熷垪
 function pQueue(){
 	var dataStore = [];
 	return {
@@ -77,11 +80,11 @@ function pQueue(){
 		},
 		toString:function(){
 			/* var str = '';
-			for(var i=0;i<dataStore.length-1;i++){
-				str+=dataStore[i]+',';
-			}
-			str+=dataStore[length];
-			return str; */
+			 for(var i=0;i<dataStore.length-1;i++){
+			 str+=dataStore[i]+',';
+			 }
+			 str+=dataStore[length];
+			 return str; */
 			return dataStore.toString();
 		},
 		empty:function(){
@@ -104,7 +107,7 @@ function pQueue(){
 	}
 }
 
-//基数排序
+//鍩烘暟鎺掑簭
 function distribute(arr){
 	var arrQueue = [];
 	var n = 100;
@@ -119,7 +122,7 @@ function distribute(arr){
 				arrQueue[e].enqueue(arr[i]);
 			}
 		}
-	}()
+	}();
 	var sort = function(array,n){
 		var end = [];
 		for(var i=0;i<10;i++){
@@ -141,7 +144,7 @@ function distribute(arr){
 			end = sort(end,n*10);
 		}
 		return end;
-	}
+	};
 	end = sort(arrQueue,n);
 	return end;
 }

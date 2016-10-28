@@ -1,3 +1,4 @@
+/*集合*/
 function set(){
 	var dataStore = [];
 	function add(data){

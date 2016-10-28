@@ -8,15 +8,15 @@
 //prototype模式
 var x = function(name){
     this.name = name;
-}
+};
 x.prototype.getName = function(){
     return this.name;
-}
+};
 
 //闭包模式
 var y = function(name){
-    var y = {name:name}
+    var y = {name:name};
     return {'getName':function(){return y.name}};
-}
+};
 
 

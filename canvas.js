@@ -1,3 +1,4 @@
+//知乎动画
 var animate = (function(){
     var canvas = document.getElementsByClassName('animate')[0];
     var content = canvas.getContext('2d');
@@ -15,7 +16,7 @@ var animate = (function(){
     var bg_position = {x:525,y:435};
     var bg_number = {x:10,z:55};
     var x = 0,y = 0,z = 0;
-    var p//播放
+    var p;//播放
     //var z=0;length=54;
     var t = {};
     t.init = function(){
@@ -28,7 +29,7 @@ var animate = (function(){
             content.clearRect(0,0,800,800);
             content.drawImage(img,0,0,bg_position.x,bg_position.y,0,0,bg_position.x,bg_position.y);
         });
-    }
+    };
     t.playing = function(){
         var play = function() {
             content.clearRect(0, 0, 800, 800);
@@ -47,10 +48,10 @@ var animate = (function(){
                 return;
             }
             p = setTimeout(play,75);
-        }
-        imgLoad(img,play)
+        };
+        imgLoad(img,play);
         //p = setInterval(play,75);
-    }
+    };
     t.end = function(){
         //clearInterval(p);
         clearTimeout(p);
@@ -61,7 +62,7 @@ var animate = (function(){
             content.clearRect(0, 0, 800, 800);
             content.drawImage(img,0,0,bg_position.x,bg_position.y,0,0,bg_position.x,bg_position.y);
         })
-    }
+    };
     function imgLoad(img,callback){
         var timer = setInterval(function(){
             if(img.complete){
@@ -72,6 +73,8 @@ var animate = (function(){
     }
     return t;
 })();
+
+//时钟
 var setWatch = function(){
     var canvas = document.getElementsByClassName('watch')[0];
     if(canvas == null){
@@ -87,10 +90,10 @@ var setWatch = function(){
         createWatch(content);
         createTime(content);
         content.restore();
-    }
+    };
     //myWatch();
     setInterval(myWatch,1000);
-}
+};
 var createTime = function(content){
     content.save();
     var date = new Date();
@@ -139,7 +142,7 @@ var createTime = function(content){
     content.closePath();
     content.fill();
     content.stroke();
-}
+};
 var createWatch = function(content){
     content.beginPath();
     content.lineWidth = 6;
@@ -165,35 +168,40 @@ var createWatch = function(content){
     content.arc(0,0,130,0,Math.PI*2,true);
     content.closePath();
     content.stroke();
-}
+};
+
+//绘制矩形
 var setRect = function(content){
-    //绘制矩形
     content.fillRect(0,0,100,100);//默认为黑色
      content.strokeRect(120,0,100,100);//默认为黑色
      content.fillStyle = 'rgba(255,0,0,0.2)';
      content.strokeStyle = 'rgba(255,0,0,0.2)';
      content.fillRect(240,0,100,100);
      content.strokeRect(240,120,100,100);
-}
+};
+
+//清除矩形
 var clearRect = function(content){
-    //清除矩形
     content.clearRect(50,50,240,120);
-}
+};
+
+/*圆弧
+ x:圆心的x坐标
+ y:圆心的y坐标
+ straAngle:开始角度
+ endAngle:结束角度
+ anticlockwise:是否逆时针（true）为逆时针，(false)为顺时针
+ */
 var setRadius = function(content){
-    //圆弧
-    /* x:圆心的x坐标
-     y:圆心的y坐标
-     straAngle:开始角度
-     endAngle:结束角度
-     anticlockwise:是否逆时针（true）为逆时针，(false)为顺时针*/
     content.beginPath();
     content.arc(100,75,50,0,Math.PI*2,true);
     content.closePath();
     content.fillStyle = 'rgba(0,255,0,0.25)';
     content.fill();
-}
+};
+
+//线段
 var liner = function(content){
-    //线段
     content.strokeStyle = 'rgb(250,0,0)';
     content.fillStyle = 'rgb(255,0,0)';
     content.lineTo(100,100);
@@ -201,7 +209,9 @@ var liner = function(content){
     content.moveTo(200,50);
     content.lineTo(100,50);
     content.stroke();//绘制路径
-}
+};
+
+
 animate.init();
 document.getElementsByClassName('animate')[0].onmouseover = function(){
     event.preventDefault();
@@ -214,8 +224,6 @@ document.getElementsByClassName('animate')[0].onmouseout = function(){
     animate.end();
 };
 setWatch();
-
-
 
 function draw() {
   var canvas = document.getElementById('translate');
@@ -286,7 +294,6 @@ function draw() {
 }
 
 // 封装的一个用于绘制圆角矩形的函数.
-
 function roundedRect(ctx,x,y,width,height,radius){
   ctx.beginPath();
   ctx.moveTo(x,y+radius);
