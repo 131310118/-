@@ -130,43 +130,19 @@
     var randomNumber;
     var letter = [];
     var letterMap = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'/*,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'*/];
-    //var blocked_ports = [0, 1, 7, 9, 11, 13, 15, 17, 19, 20, 21, 22, 23, 25, 37, 42, 43, 53, 77, 79, 87, 95, 101, 102, 103, 104, 109, 110, 111, 113, 115, 117, 119, 123, 135, 139, 143, 179, 389, 465, 512, 513, 514, 515, 526, 530, 531, 532, 540, 556, 563, 587, 601, 636, 993, 995, 2049, 4045, 6000];
-    function is_valid_ip(ip) {
-        var v_ip = ip.split(".");
-        if (((v_ip[0] > 0) && (v_ip[0] <= 223)) && ((v_ip[1] >= 0) && (v_ip[1] <= 255)) && ((v_ip[2] >= 0) && (v_ip[2] <= 255)) && ((v_ip[3] > 0) && (v_ip[3] < 255))) {
-            return true;
-        }
-        else {
-            return /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/.test(ip);
-        }
-    }
-    function is_valid_port(v_port) {
-        if (v_port > 0 && v_port < 65536) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    function is_blocked(port_no) {
-        for (var i = 0; i < blocked_ports.length; i++) {
-            if (blocked_ports[i] == port_no) {
-                return true;
-            }else if(blocked_ports[i] > port_no){
-                return false;
-            }
-        }
-        return false;
-    }
 
     //初始化扫描结果前端显示
     function reset_scan_out() {
         document.getElementById('result').innerHTML = "";
         document.getElementById('log').innerHTML = "";
     }
+
+    //提示信息
     function log(to_log) {
         document.getElementById('log').innerHTML += to_log + ", ";
     }
+
+    //初始化扫描配置
     function init_port_ps(img) {
         //判定为非泛域后第一次进入，并开启多线程
         if(!isUniversal&&current_port==0){
@@ -195,6 +171,8 @@
         }
         return 1;
     }
+
+    //显示结果
     function results_ps() {
         document.getElementById('result').innerHTML = "<br><b>Open Ports:</b><br>" + ps_open_ports + "<br>";/*<br><b>maybe open Ports:</b><br>" + ps_maybe_open_ports + "<br><br><b>Closed/Blocked Ports:</b><br>" + ps_closed_ports + "<br><br><b>Filtered/Application Type 3&4 Ports:</b><br>" + ps_timeout_ports + "<br><br>*/
     }
@@ -249,6 +227,8 @@
             return;
         }
     }
+
+    //开始扫描入口
     function scan_ports() {
         var i;
         isUniversal = true;
@@ -354,7 +334,9 @@
         //this.scanPortsXhr();
         delete this;
     }
-    function check_ps_xhr() {
+
+    //第一次未扫描到再次进行验证，二次扫描，性能降低，准确率提高
+    /*function check_ps_xhr() {
         clearTimeout(this.time);
         var interval = (new Date).getTime() - this.start_time;
         interval = interval>minInterval?minInterval:interval;
@@ -380,7 +362,7 @@
         },10);
         //scan_ports_xhr('',this.thread);
         delete this;
-    }
+    }*/
 
     //发起扫描前，通过图片是否获取成功判定泛域
     function scan_ports_xhr() {
@@ -612,49 +594,6 @@
         catch (err) {
             document.getElementById('result').innerHTML += "<b>Scan stopped. Exception: " + err + "</b>";
             return;
-        }
-    }
-    function scan_ports_ws() {
-        if (init_port_ps()) {
-            return;
-        }
-        if (is_blocked(current_port)) {
-            //log(ip+":"+current_port + " - blocked port");
-            setTimeout("scan_ports_ws()", 10);
-            return;
-        }
-        start_time = (new Date).getTime();
-        try {
-            ws = new WebSocket("ws://" + this.secondDomain+'.'+domain + ":" + current_port);
-            setTimeout("check_ps_ws()", 5);
-        }
-        catch (err) {
-            document.getElementById('result').innerHTML += "<b>Scan stopped. Exception: " + err + "</b>";
-            return;
-        }
-    }
-    function check_ps_ws() {
-        var interval = (new Date).getTime() - start_time;
-        if (ws.readyState == 0) {
-            if (interval > closed_port_max) {
-                //log(ip+":"+current_port + " - time exceeded");
-                //ps_timeout_ports.push(ip+":"+current_port);
-                setTimeout("scan_ports_ws()", 1);
-            }
-            else {
-                setTimeout("check_ps_ws()", 5);
-            }
-        }
-        else {
-            if (interval < open_port_max) {
-                //log(ip+":"+current_port + " - open");
-                ps_open_ports.push(this.secoudDomain+'.'+domain);
-            }
-            else {
-                //log(ip+":"+current_port + " - closed");
-                //ps_closed_ports.push(ip+":"+current_port);
-            }
-            setTimeout("scan_ports_ws()", 1);
         }
     }
 </script>

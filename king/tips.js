@@ -23,19 +23,19 @@ var $ = {
             if($.setOpacity(element,(end-start)/time)>=1){
                 clearInterval(fadeInPlay);
             }
-        },25);
+        },1);
     },
     fadeOut:function(element,time){
         var start = new Date()*1;
         element.style.display = 'block';
         $.setOpacity(element,1);
-            var fadeOutPlay = setInterval(function(){
+        var fadeOutPlay = setInterval(function(){
             var end = new Date()*1;
             if($.setOpacity(element,1-((end-start)/time))<=0){
                 clearInterval(fadeOutPlay);
                 element.style.display = 'none';
             }
-        },25);
+        },1);
     }
 };
 var tips = (function(){
