@@ -8,7 +8,7 @@ function set(){
 		}else{
 			return false;
 		}
-	};
+	}
 	function remove(data){
 		var index = dataStore.indexOf(data);
 		if(index>=0){
@@ -16,10 +16,10 @@ function set(){
 			return true;
 		}
 		return false;
-	};
+	}
 	function size(){
 		return dataStore.length;
-	};
+	}
 	function union(newSet){
 		var unionSet = new set();
 		var i = 0;
@@ -32,7 +32,7 @@ function set(){
 			unionSet.add(arr[i]);
 		}
 		return unionSet;
-	};
+	}
 	function intersect(newSet){
 		var intersectSet = new set();
 		var interSet = new set();
@@ -48,7 +48,7 @@ function set(){
 			}
 		}
 		return interSet;
-	};
+	}
 	function subset(newSet){
 		var arr = newSet.show();
 		var l = arr.length;
@@ -62,7 +62,7 @@ function set(){
 			}
 		}
 		return true;
-	};
+	}
 	function difference(newSet){
 		var unionSet = this.union(newSet);
 		var interSet = this.intersect(newSet);
@@ -72,10 +72,10 @@ function set(){
 			unionSet.remove(iArr[i]);
 		}
 		return unionSet;
-	};
+	}
 	function show(){
 		return dataStore;
-	};
+	}
 	return {
 		'add':add,
 		'remove':remove,

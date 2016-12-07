@@ -6,6 +6,10 @@ var KEObject = {
     kETool_down:document.getElementById('kETool_LH').getElementsByClassName('kETool_down')[0],
     kETool_LHDown:document.getElementById('kETool_LH').getElementsByClassName('kETool_LHDown')[0]
 };
+/**
+ * 编辑器全局状态、配置、共有方法
+ * @type {{selection: undefined, range: undefined, list: Array, redoList: Array, emptyList: Array, status: {}, isKEMCDown: boolean, isEmptyNode: Function, setFocus: Function, saveCusorPos: Function, select: Function, delEmptyList: Function, execCommand: Function, mergeChild: Function, mergeParent: Function, getRangeEndContainer: Function, getRangeStartContainer: Function, getFatherP: Function, mergeEmpty: Function, initTools: Function, saveWork: Function, setWork: Function, compare: Function, updateObject: Function, paste: Function, pastePlain: Function, isBlock: Function}}
+ */
 var KEStatus = {
     selection:undefined,
     range:undefined,
@@ -331,6 +335,7 @@ var KEStatus = {
         KEStatus.range.setEnd(e.container, e.start);
         KEStatus.select();
     },
+    //是否相等
     compare:function(inputValue,outputValue){
         for(var key in inputValue) {
             if (inputValue[key] && inputValue[key].constructor == Object) {
@@ -344,6 +349,7 @@ var KEStatus = {
         }
         return true;
     },
+    //合并
     updateObject:function (inputValue,outputValue){
         for(var key in inputValue) {
             if (inputValue[key] && inputValue[key].constructor == Object) {
@@ -355,6 +361,7 @@ var KEStatus = {
         }
         return outputValue;
     },
+    //html粘贴
     paste:function(e){
         var html = e.clipboardData.getData('text/html');
         if(html){
@@ -498,6 +505,7 @@ var KEStatus = {
             KEStatus.pastePlain(e);
         }
     },
+    //纯文本粘贴
     pastePlain:function(e){
         e.preventDefault();
         var text =  e.clipboardData.getData("text/plain");
@@ -522,11 +530,22 @@ var KEStatus = {
             }
         }
     },
+    //块状判断
     isBlock:function(element) {
         return (element.style.display == 'block' || (element.style.display == '' && element.nodeName == 'P'));
     }
 };
+/**
+ * 命令逻辑处理区
+ * @type {{execCommandTag: Function, execCommandBlock: Function, Bold: Function, Italic: Function, Underline: Function, Border: Function, LineHeight: Function, save: Function, undo: Function, redo: Function}}
+ */
 var KECommands = {
+    /**
+     * 非块状修改实现
+     * @param status 标志位，需要变更的状态，例如：isBold
+     * @param nodeName 增减的标签
+     * @param option 标签属性
+     */
     execCommandTag: function(status, nodeName, option) {
         var b,obj,ec,range,length;
         if(!KEStatus.isMultiLine) {//单行操作
@@ -752,6 +771,10 @@ var KECommands = {
             return ele;
         }
     },
+    /**
+     * 块状修改，在最外一层P上做变更，
+     * @param option
+     */
     execCommandBlock: function(option) {
         if(!KEStatus.isMultiLine) {
             var node = KEStatus.range.startContainer;
@@ -818,34 +841,47 @@ var KECommands = {
 };
 
 //记录用户选中-start
+/**
+ * 用户计入编辑区
+ */
 kEMainContent.onmousedown = function(){
     KEStatus.isKEMCDown = true;
 };
-kEMainContent.onmouseup = function(){
+/**
+ * 若用户进入编辑区记录焦点并初始化工具栏
+ */
+kEMainContent.onmouseup = function() {
     if(KEStatus.isKEMCDown){
         KEStatus.saveCusorPos();
         KEStatus.initTools();
     }
 };
+/**
+ * 若图片正在编辑，离开浏览器取消图片编辑
+ */
 document.onmouseup = function(e){
     if(KEStatus.isImgDown){
         KEStatus.isImgDown = false;
     }
 };
+/**
+ * 失去焦点记录失去前状态并初始化工具栏
+ */
 kEMain.onblur = function(){
     KEStatus.isKEMCDown = false;
     KEStatus.saveCusorPos();
     KEStatus.initTools();
 };
 //记录用户选中-end
-//内容为空无法删除-start
+/**
+ *内容为空无法删除|撤销|重做
+ */
 kEMain.addEventListener('keydown',function(e){
     if(e.keyCode==8){
         if(kEMainContent.childNodes[0].innerHTML=='<br>' && kEMainContent.childNodes.length < 3){
             e.preventDefault();
             e.stopPropagation();
         }
-//内容为空无法删除-end
     }else if(e.keyCode==90){
         event.preventDefault();
         KECommands['undo']();
@@ -856,16 +892,30 @@ kEMain.addEventListener('keydown',function(e){
         KECommands['copy']();
     }*/
 });
+/**
+ * 粘贴
+ * @param e
+ */
 kEMain.onpaste = function(e){
     KEStatus.paste(e);
 };
+/**
+ * 复制
+ */
 kEMain.oncopy = function(){
     KEStatus.delEmptyList();
 };
+/**
+ * 每次输入保存焦点并初始化工具栏
+ */
 kEMain.addEventListener('keyup',function(){
     KEStatus.saveCusorPos();
     KEStatus.initTools();
 });
+/**
+ * 工具栏入口
+ * @param e
+ */
 kETools.onclick = function(e){
     switch(e.target.id) {
         case 'kETool_b':
@@ -903,6 +953,9 @@ kETools.onclick = function(e){
             break;
     }
 };
+/**
+ * 图片上传
+ */
 kETool_img.addEventListener('change',function(){
     if(!KEStatus.range){
         kEMain.focus();
@@ -993,10 +1046,16 @@ kETool_img.addEventListener('change',function(){
         }
     }*/
 });
+/**
+ * 编辑图片开始
+ */
 modifyImg.addEventListener('mousedown',function(e){
     KEStatus.isImgDown = true;
     KEStatus.modifyTarget = e.target;
 });
+/**
+ * 编辑图片
+ */
 document.body.addEventListener('mousemove',function(e){
     if(!KEStatus.isImgDown){
         return;
@@ -1050,6 +1109,9 @@ document.body.addEventListener('mousemove',function(e){
         setPosition();
     }
 });
+/**
+ * 工具栏下拉状态切换
+ */
 KEObject.kETool_down.onclick = function(){
     event.stopPropagation();
     event.preventDefault();
@@ -1060,6 +1122,9 @@ KEObject.kETool_down.onclick = function(){
         ele.className = 'kETool_LHDown';
     }
 };
+/**
+ * 行高下拉单独执行
+ */
 KEObject.kETool_LHDown.addEventListener('click',function(e){
     e.stopPropagation();
     e.preventDefault();

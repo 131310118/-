@@ -52,14 +52,14 @@ function quicksort1(obj,fun){
     }
     if(!isEmptyObject(left)){
         var l = quicksort1(left,fun);
-        for(var i=0;i< l.length;i++){
+        for(i=0;i< l.length;i++){
             arr.push(l[i]);
         }
     }
     arr.push(mid);
     if(!isEmptyObject(right)){
         var r = quicksort1(right,fun);
-        for(var i=0;i< r.length;i++){
+        for(i=0;i< r.length;i++){
             arr.push(r[i]);
         }
     }
@@ -67,4 +67,4 @@ function quicksort1(obj,fun){
 }
 obj = quicksort1(obj,function(a,b){
     return a.t< b.t;
-})
+});

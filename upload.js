@@ -21,7 +21,7 @@ var tests = {
         'image/png': true,
         'image/jpeg': true,
         'image/gif': true
-    }
+    };
 //图片预览
 document.getElementById('upload').addEventListener('change',function(){
     if(typeof FileReader != 'undefined'){
@@ -33,18 +33,19 @@ document.getElementById('upload').addEventListener('change',function(){
         if(acceptedTypes[document.getElementById('upload').files[0].type] === true){
             var reader = new FileReader();
             reader.onload = function(event){
+                event = window.event || event;
                 var image = new Image();
                 image.src = event.target.result;
                 image.width = 100;
                 image.height = 100;
                 document.body.appendChild(image);
-            }
+            };
             reader.readAsDataURL(document.getElementById('upload').files[0]);
         }
     }
-})
+});
 document.getElementsByTagName('form')[0].addEventListener('submit',function(){
-    var url = 'www.bug-bank.com'
+    var url = 'www.bug-bank.com';
     if(window.FormData){
         var formData = new FormData();
         formData.append('upload',document.getElementById('upload').files[0]);
@@ -52,8 +53,8 @@ document.getElementsByTagName('form')[0].addEventListener('submit',function(){
         xhr.timeout = 3000;//http请求的时限
         xhr.ontimeout = function(event){
             console.log('请求超时');
-        }
-        xhr.responseText = 'blob'//二进制文件
+        };
+        xhr.responseText = 'blob';//二进制文件
         xhr.open('post',url);
         xhr.onload = function(){
             if(xhr.status === 200){
@@ -69,10 +70,10 @@ document.getElementsByTagName('form')[0].addEventListener('submit',function(){
                 var progress = document.getElementById('uploadprogress');
                 progress.value = progress.innerHTML = complete;
             }
-        }
+        };
         xhr.send(formData);
     }
-})
+});
 //图片拖放
 if('draggable' in document.createElement('span')){
     var holder = document.getElementById('holder');
@@ -101,7 +102,7 @@ if('draggable' in document.createElement('span')){
         this.className = '';
         var files = e.dataTransfer.files;
         readfiles(files);
-    },true)
+    },true);
     /*holder.ondrop = function (e) {
         this.className = '';
         e.preventDefault();

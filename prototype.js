@@ -14,7 +14,7 @@ function a(){
 //添加子对象原型方法
 a.prototype.getname = function(){
     return this.name;
-}
+};
 //父对象
 function b(name){
     this.name = name;

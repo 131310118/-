@@ -83,5 +83,5 @@ var king = {
             this.each( doAnimation ) :
             this.queue( optall.queue, doAnimation );
     }
-}
+};
 king.animate(genFx( "show" ));

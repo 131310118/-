@@ -32,7 +32,7 @@ var Cat = {
         cat.makeSound = function(){console.log("喵喵喵")};
         return cat;
     }
-}
+};
 //创建实例
 var cat1 = Cat.create();
 cat1.sleep();
@@ -45,7 +45,7 @@ var Cat = {
         cat.makeSound = function(){console.log(sound);};
         return cat;
     }
-}
+};
 
 //数据共享，只要把共享数据封装在类对象的里面，create()房外的外面即可
 var Cat = {
@@ -56,7 +56,7 @@ var Cat = {
         cat.changeSound = function(x){Cat.sound = x;};
         return cat;
     }
-}
+};
 var cat1 = Cat.create();
 var cat2 = Cat.create();
 cat1.makeSound();

@@ -1,3 +1,8 @@
+/**
+ * 导入json格式或者对象形式自动建树
+ */
+
+
 /*
 #tree .child_list{
     padding: 10px 20px;
@@ -78,6 +83,25 @@ function tree(obj,parent){
                     }
                 }
                 t.length = j;
+            } else if(typeof obj[i] == 'object') {
+                var l = 0;
+                for(var key in obj[i]) {
+                    if(typeof obj[i][key] == 'object') {
+                        var b = {};
+                        b[key] = obj[i][key];
+                        root[l++] = new tree(b, t);
+                    } else {
+                        var b = {};
+                        b[key] = obj[i][key];
+                        root[l++] = new tree(b, t);
+                    }
+                }
+                t.length = l;
+            } else if(typeof obj[i] == 'string'){
+                var b = {};
+                b[obj[i]] = {};
+                root[0] = new tree(b, t);
+                t.length = 1;
             }
         }
         return root;
@@ -450,11 +474,28 @@ var documents = {
 			{'搞笑视频':[
 				{'囧兔兔':['笑死我了.mp4']}
 			]},
+            {'搞事情': '就是要搞事情'}
 		]}
 	]
 };
+var objectData = {
+    '我的电脑': {
+        '我的文档': 'index.html',
+        '我的视频': {
+            '学习视频': {
+                'canvas高级动画': 'canvas.js'
+            },
+            '搞笑视频': {
+                '囧兔兔': '笑死我了.mp4'
+            },
+            '搞事情': '就是要搞事情'
+        }
+    }
+};
 var t = new tree(documents);
+var tw = new tree(objectData);
 document.getElementById('tree').appendChild(t.upDateLiner(t.html()));
+document.getElementById('tree').appendChild(tw.upDateLiner(tw.html()));
 /* t.delete('3');
 console.log(t.find('f'));
 t.find('w').setNode({5:[{2:[{3:[7]},9]},{w:[{f:[{jsf:['jdh','hfj']},'hi']},'odusj']}]}).upDateLiner(t.tree); */

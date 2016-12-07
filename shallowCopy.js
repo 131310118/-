@@ -9,6 +9,6 @@ function shallowCopy(p){
 //实例
 var person = {
     nationality:"chinese"
-}
+};
 var doctor = shallowCopy(person);
 console.log(doctor.nationakity);

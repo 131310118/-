@@ -8,7 +8,7 @@ Observer.prototype = {
         this.eventList[name].push({fn:fn||null,scope:scope});
     },
     trigger:function(){
-        var args = Array.prototype.slice.call(arguments);
+        var args = Array.prototype.slice.call(arguments); //arguments转数组
         var name = args.shift();
         var list = this.eventList[name];
         for(var i=0;i<list.length;i++){

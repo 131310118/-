@@ -15,5 +15,5 @@ function deepcopy(p,c){
 //实例
 var person = {
     nationality:"America"
-}
+};
 var doctor = deepcopy(person);

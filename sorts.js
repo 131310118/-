@@ -63,7 +63,7 @@ var sorts = {
 		var left = 0;
 		var right = 1;
 		var i = 0;
-		var compare = function (a, b) {return a > b;}
+		var compare = function (a, b) {return a > b;};
 		if(fun) {
 			compare = fun;
 		}
@@ -102,9 +102,9 @@ var sorts = {
 				right = left + step;
 			}
 			if(right < tree.length) {
-				var leftA = [];
-				var rightA = [];
-				var j = 0;
+				leftA = [];
+				rightA = [];
+				j = 0;
 				for(i = 0; i < step; i++) {
 					leftA.push(tree[left + i]);
 				}
@@ -162,7 +162,7 @@ var sorts = {
 					}
 				} else {
 					var min = arr[i];
-					var index = i;
+					index = i;
 					if(min > arr[i * 2 + 1]) {
 						min = arr[i * 2 + 1];
 						index = i * 2 + 1;
@@ -172,13 +172,13 @@ var sorts = {
 						index = i * 2 + 2;
 					}
 					if(index != i) {
-						var temp = arr[index];
+						temp = arr[index];
 						arr[index] = arr[i];
 						arr[i] = temp;
 					}
 				}
 			}
-		}
+		};
 		while(arr.length) {
 			sort(arr);
 			result.push(arr[0]);
@@ -187,4 +187,4 @@ var sorts = {
 		}
 		return result;
 	}
-}
+};

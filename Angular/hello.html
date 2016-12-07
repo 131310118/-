@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <!--<script src="http://cdn.static.runoob.com/libs/angular.js/1.4.6/angular.min.js" type="text/javascript" charset="utf-8"></script>-->
+    <script src="./bower_components/angular/angular.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./js/controllers/controller.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div ng-controller="HelloController">
+    <p><span ng-bind="greeting.text"></span>, World</p>
+    <div ng-repeat="item in items">
+        <span ng-bind="item.title"></span>
+    </div>
+    <input type="checkbox" ng-model="youCheckedit">
+    <form>
+        Starting:<input ng-change="computeNeeded()" ng-model="funding.startingEstimate">
+        Recommendation:{{funding.needed}}
+    </form>
+</div>
+<script type="text/javascript" charset="UTF-8">
+    /*var myAppModule = angular.module('myApp',[]);
+    myAppModule.controller('HelloController', function($scope) {
+        $scope.greeting = {text: 'hello'};
+    });*/
+</script>
+</body>
+</html>
