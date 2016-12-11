@@ -10,6 +10,7 @@ function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defi
 
 /**
  * 字符表示的六种方法
+ * 新增第六种｛｝unicode表示法
  */
 /*
 '\z' === 'z'; //true
