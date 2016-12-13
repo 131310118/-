@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body {
+            background: #222;
+            margin: 0rem;
+            min-height: 100vh;
+        }
+        #canvas {
+            position: absolute;
+            display: block;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas" width="100vw" height="100vh"></canvas>
+<script type="text/javascript" charset="UTF-8">
+    //配置
+    const opts = {
+        particleColor: "rgb(200,200,200)",
+        lineColor: "rgb(200,200,200)",
+        particleAmount: 40,
+        defaultSpeed: 1,
+        variantSpeed: 1, //点的尺寸大小
+        defaultRadius: 2,
+        variantRadius: 2, //点一定速度的随机性
+        linkRadius: 200 //点与点要连成线必须要靠近的距离范围
+    };
+
+    let rgb = opts.lineColor.match(/\d+/g);
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    const canvasBody = document.getElementById("canvas");
+    canvasBody.width = w;
+    canvasBody.height = h;
+    const drawArea = canvasBody.getContext("2d");
+    let delay = 200, tid;
+    let particles = []; //点集合
+
+    window.addEventListener("resize", function() {
+        deBouncer();
+    });
+
+    let deBouncer = function() {
+        clearTimeout(tid);
+        tid = setTimeout(function() {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvasBody.width = w;
+            canvasBody.height = h;
+        }, delay);
+    };
+
+    let Particle = function(xPos, yPos) {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.speed = opts.defaultSpeed + Math.random() * opts.variantSpeed;
+        this.directionAngle = Math.floor(Math.random() * 360);
+        this.color = opts.particleColor;
+        this.radius = opts.defaultRadius + Math.random() * opts.variantRadius;
+        this.vector = {
+            x: Math.cos(this.directionAngle) * this.speed,
+            y: Math.sin(this.directionAngle) * this.speed
+        };
+        this.update = function() {
+            this.border();
+            this.x += this.vector.x;
+            this.y += this.vector.y;
+        };
+        this.border = function() {
+            if(this.x >= w || this.x <= 0) {
+                this.vector.x *= -1;
+            }
+            if (this.y >= h || this.y <= 0) {
+                this.vector.y *= -1;
+            }
+            if (this.x > w) this.x = w;
+            if (this.y > h) this.y = h;
+            if (this.x < 0) this.x = 0;
+            if (this.y < 0) this.y = 0;
+        };
+        this.draw = function() {
+            drawArea.beginPath();
+            drawArea.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            drawArea.closePath();
+            drawArea.fillStyle = this.color;
+            drawArea.fill();
+        }
+    };
+
+    function setup() {
+        for(let i = 0; i < opts.particleAmount; i++) {
+            particles.push(new Particle());
+        }
+        loop();
+    }
+
+    function loop() {
+        drawArea.clearRect(0, 0, w, h);
+        particles.forEach(function(particle) {
+            particle.update();
+            particle.draw();
+        });
+        particles.forEach(function(particle) {
+            linkPoints(particle, particles);
+        });
+        setTimeout(loop, 0);
+    }
+
+    let checkDistance = function(x1, y1, x2, y2){
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    };
+
+    let linkPoints = function(point, hubs) {
+        hubs.forEach(function(p) {
+            let distance = checkDistance(point.x, point.y, p.x, p.y);
+            let opacity = 1 - distance / opts.linkRadius;
+            if(opacity > 0) {
+                drawArea.lineWidth = 0.5;
+                drawArea.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
+                drawArea.beginPath();
+                drawArea.moveTo(point.x, point.y);
+                drawArea.lineTo(p.x, p.y);
+                drawArea.closePath();
+                drawArea.stroke();
+            }
+        })
+    };
+
+    setup();
+</script>
+</body>
+</html>
