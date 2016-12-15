@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,aAAc;EACZ,KAAK,EAAE,IAAI;EACX,mCAAsB;IACpB,OAAO,EAAE,IAAI;IACb,WAAW,EAAE,MAAM;IACnB,eAAe,EAAE,MAAM;IACvB,MAAM,EAAE,KAAK;IACb,QAAQ,EAAE,MAAM",
+"sources": ["canvasCover.scss"],
+"names": [],
+"file": "canvasCover.css"
+}
