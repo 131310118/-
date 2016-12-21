@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>波浪</title>
+</head>
+<body>
+<canvas id="wave"></canvas>
+<script src="./js/canvasWave.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    canvasWave({
+        element: document.getElementById("wave"),
+        sourceImg: "./img/logo.png",
+        fillStyle: "#4BF6EE",
+        clientWidth: document.body.clientWidth,
+        clientHeight: 400,
+        waveHeight: 8,
+        waveWidth: 15,
+        currentY: 400,
+        waveSpace: 5
+    })
+</script>
+</body>
+</html>
