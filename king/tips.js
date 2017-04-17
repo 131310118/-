@@ -53,6 +53,10 @@ var tips = (function(){
             var option = {
                 callback:{}
             };
+        } else {
+            if(!option.callback) {
+                option.callback = {};
+            }
         }
         var config = {
             img:option.img||'<span class="mr5"></span>',
