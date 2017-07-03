@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div>
+    <ul>
+        <li draggable="true" id="dragTarget">1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+        <li>6</li>
+    </ul>
+</div>
+<script>
+    var target = document.getElementById('dragTarget');
+    target.addEventListener('dragstart', _dragStart);
+    function _dragStart(evt) {
+        evt.dataTransfer.effectAllowed = 'move';
+        evt.dataTransfer.setData("Text", evt.target.getAttribute('id'));
+        target.parentNode.addEventListener('dragover', _dragOver);
+    }
+    function _dragOver(evt) {
+        target.parentNode.insertBefore(target, evt.target);
+    }
+    var mergeSort = function(arr) {
+        var sort = function(arr1, arr2) {
+            var arr3 = [];
+            while(arr1 && arr2 && arr1.length && arr2.length) {
+                arr3.push(arr1[0] < arr2[0] ? arr1.shift() : arr2.shift());
+            }
+            while(arr1 && arr1.length) {
+                arr3.push(arr1.shift());
+            }
+            while(arr2 && arr2.length) {
+                arr3.push(arr2.shift());
+            }
+            if(typeof arr1 == 'number' && typeof arr2 == 'number') {
+                arr3.push(arr1 < arr2 ? arr1 : arr2);
+                arr3.push(arr1 < arr2 ? arr2 : arr1);
+            } else if(typeof arr1 == 'number') {
+                arr3.push(arr1);
+            }
+            return arr3;
+        };
+        while(arr.length > 1) {
+            for(var i = 0; i < arr.length; i += 2) {
+                arr[i / 2] = sort(arr[i], arr[i + 1]);
+            }
+            arr.length = Math.ceil(i / 2);
+        }
+        return arr;
+    }
+    //mergeSort([4,54,5,15,45,1,5451,87,5,4]);
+</script>
+</body>
+</html>

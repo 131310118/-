@@ -23,11 +23,30 @@ function queryString(id){
     return e;
 }
 
-function getQuery(name) {
-    var reg = new RegExp("(^|&)"+name+"=([^&]*(&|$))");
-    var r = window.location.search.substr(1).match(reg);
-    if(r!=null) {
-        return decodeURI(r[2]);
+function getQueryString() {
+    var qs = window.location.search ? window.location.search.subString(1) : "";
+    if(qs) {
+        var args = {};
+        var items = qs.split('&');
+        var key, value, keys;
+        for(var i = 0, j = items.length; i < j; i++) {
+            keys = items[i].split('=');
+            key = decodeURIComponent(keys[0]);
+            value = keys[1] ? decodeURIComponent(keys[1]) : undefined;
+            args[key] = value;
+        }
+        return args;
     }
-    return null;
+    return undefined;
+}
+
+function getQuery(name) {
+    if(name) {
+        var reg = new RegExp("(^|&)"+name+"=([^&]*(&|$))");
+        var r = window.location.search.substr(1).match(reg);
+        if(r!=null) {
+            return decodeURIComponent(r[2]);
+        }
+        return null;
+    }
 }
